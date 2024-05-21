@@ -18,7 +18,7 @@ app.use(cors())
 databaseProject.run()
 app.use("/login",loginRoutes);
 app.use(errorHandle);
-console.log(databaseProject.user.find().toArray());
+
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
   })
