@@ -1,4 +1,3 @@
-import { ObjectId } from "mongodb";
 
 export class User {
   constructor(user) {
