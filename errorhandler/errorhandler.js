@@ -1,6 +1,7 @@
 export const errorHandle=(req,res,err)=>{
+    console.log(err);
     if(err){
-        console.log("next:err",err);
-        return res.json({"error":err})
+        console.log("vao");
+        return res.json({error:err})
     }
 }

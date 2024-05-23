@@ -18,7 +18,7 @@ export const validateRegister = validator(
     checkSchema(
       {
         email: {
-          errorMessage: "Invalid username",
+          errorMessage: "Invalid email",
           isEmail: true,
           custom: {
             options: async (value, { req }) => {
@@ -92,7 +92,7 @@ export const loginValidator = validator(
   
             options: async (value, { req }) => {
               let checked = false;
-              const userLogin = await databaseProject.users.findOne({
+              const userLogin = await databaseProject.user.findOne({
                 email: req.body.email,
               });
               if(userLogin){

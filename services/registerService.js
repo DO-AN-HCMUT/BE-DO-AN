@@ -2,10 +2,10 @@ import bcrypt from "bcrypt";
 
 import { User } from "../Schema/schema.js";
 import databaseProject from "../mongodb.js";
-import { createTokenLogin, createTokenRefresh } from "./loginService.js";
+import { createTokenLogin } from "./loginService.js";
 const privateKey = process.env.PRIVATE_KEY;
 async function register(payload) {
-  const existingAccount = await databaseProject.users.findOne({
+  const existingAccount = await databaseProject.user.findOne({
     email: payload.email,
   });
   console.log(existingAccount);
@@ -33,11 +33,10 @@ export const createRegisterAccess = async (req, res, next) => {
     const encrypt = { email: req.body.email, password: req.body.password };
     const insertData = await register(req.body);
     const accessToken = await createTokenLogin(encrypt, privateKey);
-    const refreshToken = await createTokenRefresh(encrypt, privateKey);
+   
     return res.json({
       message: "Success",
-      accessToken,
-      refreshToken,
+      accessToken
     });
   } catch (error) {
     next(error);

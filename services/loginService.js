@@ -17,26 +17,11 @@ export const   createTokenLogin =  (data,privateKey) =>  {
     );
   });
 };
-export const   createTokenRefresh =  (data,privateKey) =>  {
-    console.log(data);
-    return  new  Promise((resolve, reject) => {
-       jwt.sign(
-        { email: data.email, password: data.password },
-        privateKey,
-        (err, token) => {
-          if (err) {
-            reject(err.message)
-          }
-          resolve(token);
-        }
-      );
-    });
-  };
 export const createLoginAccess= async(req,res)=>{
   
   const encrypt = {email:req.body.email,password: req.body.password };
   
   const token=  await createTokenLogin(encrypt,privateKey);
-  const refresh= await createTokenRefresh(encrypt,privateKey);
-  return res.json({message:"Success",accessToken:token,refresh:refresh});
+
+  return res.json({message:"Success",accessToken:token});
 }

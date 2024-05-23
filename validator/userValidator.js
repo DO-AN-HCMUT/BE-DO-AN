@@ -1,19 +1,17 @@
 import jwt from "jsonwebtoken";
-import databaseProject from "../mongodb";
+import databaseProject from "../mongodb.js";
 const privateKey = process.env.PRIVATE_KEY;
 export const checkToken = (privateKey, token) => {
-  if (token !== undefined) {
-    return new Promise((resolve, reject) => {
-      jwt.verify(token, privateKey, (err, token) => {
-        if (err) {
-          throw reject(err);
-        }
-        resolve(token);
-      });
-    });
-  } else {
-    console.log("error Token");
-    return { err: "error checkToken" };
+  try {
+    if (token !== undefined) {
+      
+      return jwt.verify(token, privateKey)
+    } else {
+      console.log("error Token");
+      return { error: "error checkToken" };
+    }
+  } catch (error) {
+    return {error:error}
   }
 };
 export const userValidator = async (req, res, next) => {
@@ -25,19 +23,23 @@ export const userValidator = async (req, res, next) => {
   if (token == "undefined") {
     throw new Error("Access token is undefined");
   } else {
-    const userUnit = await checkToken(privateKey, token);
-
-    if (userUnit) {
+    const userUnit = checkToken(privateKey, token);
+    console.log(userUnit);
+    if (userUnit.error == undefined) {
       const result = await databaseProject.user.findOne({
         email: userUnit.email,
       });
       if (result) {
-        console.log(result._id.valueOf());
-        req.userID = result._id.valueOf();
+        console.log(JSON.stringify(result._id));
+        req.userID = result._id;
         return next();
       } else {
         return res.json({ err: "Access token is wrong" });
       }
+    }
+    else{
+      
+      return  res.json({error:userUnit.error});
     }
   }
 };

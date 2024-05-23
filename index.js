@@ -6,6 +6,7 @@ import morgan from "morgan";
 import databaseProject from "./mongodb.js";
 import { loginRoutes } from "./routes/loginRoutes.js";
 import { errorHandle } from "./errorhandler/errorhandler.js";
+import { userRoutes } from "./routes/userRoutes.js";
 
 const app = express()
 const port = 4000
@@ -16,7 +17,8 @@ app.use(morgan('combined'))
 
 app.use(cors())
 databaseProject.run()
-app.use("/login",loginRoutes);
+app.use("/auth",loginRoutes);
+app.use("/user",userRoutes);
 app.use(errorHandle);
 
 app.listen(port, () => {
