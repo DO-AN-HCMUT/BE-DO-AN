@@ -60,7 +60,7 @@ export const validateRegister = validator(
       ["body"]
     )
   );
-export const loginValidator = validator(
+export const validateLogin = validator(
     checkSchema(
       {
         email: {
