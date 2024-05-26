@@ -109,7 +109,7 @@ export const validateLogin = validator(
               if (checked == true) {
                 return true;
               } else {
-                throw new Error(" PASSWORD DOES NOT MATCH");
+                throw new Error("Password is not matched");
               }
             }
           },
