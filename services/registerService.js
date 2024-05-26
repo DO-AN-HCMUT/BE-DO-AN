@@ -35,7 +35,7 @@ export const createRegisterAccess = async (req, res, next) => {
     const accessToken = await createTokenLogin(encrypt, privateKey);
    
     return res.json({
-      message: "Success",
+      msg: "Success",
       accessToken
     });
   } catch (error) {

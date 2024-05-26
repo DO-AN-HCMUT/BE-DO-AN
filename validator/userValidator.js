@@ -8,7 +8,7 @@ export const checkToken = (privateKey, token) => {
       return jwt.verify(token, privateKey)
     } else {
       console.log("error Token");
-      return { error: "error checkToken" };
+      return { msg: "error checkToken" };
     }
   } catch (error) {
     return {error:error}
@@ -34,12 +34,12 @@ export const userValidator = async (req, res, next) => {
         req.userID = result._id;
         return next();
       } else {
-        return res.json({ err: "Access token is wrong" });
+        return res.status(400).json({ msg: "Access token is wrong" });
       }
     }
     else{
       
-      return  res.json({error:userUnit.error});
+      return  res.status(400).json({msg:userUnit.error});
     }
   }
 };
