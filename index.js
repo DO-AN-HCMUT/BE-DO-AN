@@ -7,6 +7,7 @@ import databaseProject from "./mongodb.js";
 import { loginRoutes } from "./routes/loginRoutes.js";
 import { errorHandle } from "./errorhandler/errorhandler.js";
 import { userRoutes } from "./routes/userRoutes.js";
+import { taskRoutes } from "./routes/taskRoutes.js";
 
 const app = express()
 const port = 4000
@@ -19,6 +20,7 @@ app.use(cors())
 databaseProject.run()
 app.use("/auth",loginRoutes);
 app.use("/user",userRoutes);
+app.use("/task",taskRoutes);
 app.use(errorHandle);
 
 app.listen(port, () => {

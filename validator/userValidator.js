@@ -8,7 +8,7 @@ export const checkToken = (privateKey, token) => {
       return jwt.verify(token, privateKey)
     } else {
       console.log("error Token");
-      return { msg: "error checkToken" };
+      return { error: "error checkToken" };
     }
   } catch (error) {
     return {error:error}
