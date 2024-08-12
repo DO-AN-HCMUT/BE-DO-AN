@@ -31,12 +31,13 @@ async function register(payload) {
 export const createRegisterAccess = async (req, res, next) => {
   try {
     const encrypt = { email: req.body.email, password: req.body.password };
-    const insertData = await register(req.body);
+    await register(req.body);
     const accessToken = await createTokenLogin(encrypt, privateKey);
    
-    return res.json({
-      msg: "Success",
-      accessToken
+    return res.status(200).json({
+      message: "Success",
+      payload:{accessToken},
+      success:true
     });
   } catch (error) {
     next(error);

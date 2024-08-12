@@ -17,11 +17,15 @@ export const   createTokenLogin =  (data,privateKey) =>  {
     );
   });
 };
-export const createLoginAccess= async(req,res)=>{
-  
+export const createLoginAccess= async(req,res,next)=>{
+  try {
+    
   const encrypt = {email:req.body.email,password: req.body.password };
   
   const token=  await createTokenLogin(encrypt,privateKey);
 
-  return res.json({msg:"Success",accessToken:token});
+  return res.json({message:"Success",payload:{accessToken:token},success:true});
+  } catch (error) {
+    return next(error)
+  }
 }

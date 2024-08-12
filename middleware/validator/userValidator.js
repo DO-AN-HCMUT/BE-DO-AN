@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import databaseProject from "../mongodb.js";
+import databaseProject from "../../mongodb.js";
 const privateKey = process.env.PRIVATE_KEY;
 export const checkToken = (privateKey, token) => {
   try {
@@ -34,12 +34,21 @@ export const userValidator = async (req, res, next) => {
         req.userID = result._id;
         return next();
       } else {
-        return res.status(400).json({ msg: "Access token is wrong" });
+        
+        return res.status(400).json({
+          payload:{},
+          message:"Access token is wrong",
+          success:false
+      });
       }
     }
     else{
+      return res.status(400).json({
+        payload:{},
+        message:userUnit.error,
+        success:false
+    });
       
-      return  res.status(400).json({msg:userUnit.error});
     }
   }
 };

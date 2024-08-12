@@ -20,7 +20,11 @@ export const validator = (schema) => {
       if (error.password) {
         msg += error.password.msg;
       }
-      return res.status(400).json({ msg: msg });
+      return res.status(400).json({
+        payload: {},
+        message: msg,
+        success: false
+      });
     }
     next();
   };
