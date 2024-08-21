@@ -4,14 +4,24 @@ const privateKey = process.env.PRIVATE_KEY;
 export const checkToken = (privateKey, token) => {
   try {
     if (token !== undefined) {
-      
+
       return jwt.verify(token, privateKey)
     } else {
       console.log("error Token");
-      return { error: "error checkToken" };
+      const error = "error checkToken"
+
+      return {
+        payload: {},
+        message: error,
+        success: false
+      };
     }
   } catch (error) {
-    return {error:error}
+    return {
+      payload: {},
+      message: error,
+      success: false
+    }
   }
 };
 export const userValidator = async (req, res, next) => {
@@ -21,11 +31,15 @@ export const userValidator = async (req, res, next) => {
 
   console.log(token);
   if (token == "undefined") {
-    throw new Error("Access token is undefined");
+    return {
+      payload: {},
+      message: "Access token is undefined",
+      success: false
+    }
   } else {
     const userUnit = checkToken(privateKey, token);
     console.log(userUnit);
-    if (userUnit.error == undefined) {
+    if (userUnit.success == true) {
       const result = await databaseProject.user.findOne({
         email: userUnit.email,
       });
@@ -34,21 +48,20 @@ export const userValidator = async (req, res, next) => {
         req.userID = result._id;
         return next();
       } else {
-        
         return res.status(400).json({
-          payload:{},
-          message:"Access token is wrong",
-          success:false
-      });
+          payload: {},
+          message: "Access token is wrong",
+          success: false
+        });
       }
     }
-    else{
+    else {
       return res.status(400).json({
-        payload:{},
-        message:userUnit.error,
-        success:false
-    });
-      
+        payload: {},
+        message: userUnit.message,
+        success: false
+      });
+
     }
   }
 };

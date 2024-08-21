@@ -12,7 +12,7 @@ export const uploadItem = (req, res, next) => {
 		fs.unlink(`${filePath}`, (error) => {
 			return next(error)
 		})
-		return res.json({ message: 'File uploaded successfully', filePath: filePath });
+		return res.json({ message: 'File uploaded successfully', payload: filePath,success:true });
 
 	}
 

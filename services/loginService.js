@@ -30,14 +30,22 @@ export const createLoginAccess= async(req,res,next)=>{
     return next(error)
   }
 }
-export const createOAuthAccess=async  (req,res,next)=>{
-  console.log(process.env.NEXT_PUBLIC_CLIENT_ID);
+
+export const createOAuthAccess=async  (req,res,next)=>{  
   
-  const data=await getOauthGoogleToken(req.query.code)
+  try {
+    const data=await getOauthGoogleToken(req.query.code)
   //return res.json(data)
   const { id_token, access_token } = data
-  const googleUser = await getGoogleUser({ id_token, access_token })  
-  return res.json(googleUser)
+  const googleUser = await getGoogleUser({ id_token, access_token })
+  const email=googleUser.email
+    const encrypt = {email:email,password: 'Google' };
+    
+    const token=  await createTokenLogin(encrypt,privateKey);
+    return res.redirect(`/?accessToken=${token}`)
+    } catch (error) {
+      return next(error)
+    }
 }
 const getOauthGoogleToken = async (code) => {
   const body = {

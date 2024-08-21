@@ -5,7 +5,11 @@ export const getMe= async (req,res,next)=>{
     const result= await databaseProject.user.findOne({_id:req.userID});
     console.log(result);
     
-   return res.status(200).json({payload:result});
+   return res.status(200).json({
+      payload: result,
+      message: "Success",
+      success: true
+    });
    } catch (error) {
     return next(error)
    }
