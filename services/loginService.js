@@ -42,7 +42,7 @@ export const createOAuthAccess=async  (req,res,next)=>{
     const encrypt = {email:email,password: 'Google' };
     
     const token=  await createTokenLogin(encrypt,privateKey);
-    return res.redirect(`/?accessToken=${token}`)
+    return res.redirect(`http://localhost:3000/?accessToken=${token}`)
     } catch (error) {
       return next(error)
     }
