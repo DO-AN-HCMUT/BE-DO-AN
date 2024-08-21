@@ -1,3 +1,4 @@
+import axios from "axios";
 import jwt from "jsonwebtoken"
 const privateKey=process.env.PRIVATE_KEY;
 
@@ -28,4 +29,55 @@ export const createLoginAccess= async(req,res,next)=>{
   } catch (error) {
     return next(error)
   }
+}
+export const createOAuthAccess=async  (req,res,next)=>{
+  console.log(process.env.NEXT_PUBLIC_CLIENT_ID);
+  
+  const data=await getOauthGoogleToken(req.query.code)
+  //return res.json(data)
+  const { id_token, access_token } = data
+  const googleUser = await getGoogleUser({ id_token, access_token })  
+  return res.json(googleUser)
+}
+const getOauthGoogleToken = async (code) => {
+  const body = {
+    code,
+    client_id: process.env.NEXT_PUBLIC_CLIENT_ID,
+    client_secret: process.env.NEXT_PUBLIC_CLIENT_SECRET,
+    redirect_uri: process.env.NEXT_PUBLIC_REDIRECT_URL,
+    grant_type: 'authorization_code'
+  }
+  const { data } = await axios.post(
+    'https://oauth2.googleapis.com/token',
+    body,
+    {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    }
+  )
+  return data
+}
+
+/**
+ * Hàm này thực hiện gửi yêu cầu lấy thông tin người dùng từ Google dựa trên Google OAuth token.
+ * @param {Object} tokens - Đối tượng chứa Google OAuth token.
+ * @param {string} tokens.id_token - ID token được lấy từ Google OAuth.
+ * @param {string} tokens.access_token - Access token được lấy từ Google OAuth.
+ * @returns {Object} - Đối tượng chứa thông tin người dùng từ Google.
+ */
+const getGoogleUser = async ({ id_token, access_token }) => {
+  const { data } = await axios.get(
+    'https://www.googleapis.com/oauth2/v1/userinfo',
+    {
+      params: {
+        access_token,
+        alt: 'json'
+      },
+      headers: {
+        Authorization: `Bearer ${id_token}`
+      }
+    }
+  )
+  return data
 }
