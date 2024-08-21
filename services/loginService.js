@@ -1,11 +1,11 @@
 import axios from "axios";
 import jwt from "jsonwebtoken"
-const privateKey=process.env.PRIVATE_KEY;
+const privateKey = process.env.PRIVATE_KEY;
 
-export const   createTokenLogin =  (data,privateKey) =>  {
+export const createTokenLogin = (data, privateKey) => {
   console.log(data);
-  return  new  Promise((resolve, reject) => {
-     jwt.sign(
+  return new Promise((resolve, reject) => {
+    jwt.sign(
       { email: data.email, password: data.password },
       privateKey,
       { expiresIn: "1h" },
@@ -18,34 +18,33 @@ export const   createTokenLogin =  (data,privateKey) =>  {
     );
   });
 };
-export const createLoginAccess= async(req,res,next)=>{
+export const createLoginAccess = async (req, res, next) => {
   try {
-    
-  const encrypt = {email:req.body.email,password: req.body.password };
-  
-  const token=  await createTokenLogin(encrypt,privateKey);
 
-  return res.json({message:"Success",payload:{accessToken:token},success:true});
+    const encrypt = { email: req.body.email, password: req.body.password };
+
+    const token = await createTokenLogin(encrypt, privateKey);
+
+    return res.json({ message: "Success", payload: { accessToken: token }, success: true });
   } catch (error) {
     return next(error)
   }
 }
 
-export const createOAuthAccess=async  (req,res,next)=>{  
-  
+export const createOAuthAccess = async (req, res, next) => {
+
   try {
-    const data=await getOauthGoogleToken(req.query.code)
-  //return res.json(data)
-  const { id_token, access_token } = data
-  const googleUser = await getGoogleUser({ id_token, access_token })
-  const email=googleUser.email
-    const encrypt = {email:email,password: 'Google' };
-    
-    const token=  await createTokenLogin(encrypt,privateKey);
-    return res.redirect(`http://localhost:3000/?accessToken=${token}`)
-    } catch (error) {
-      return next(error)
-    }
+    const data = await getOauthGoogleToken(req.query.code)
+    //return res.json(data)
+    const { id_token, access_token } = data
+    const googleUser = await getGoogleUser({ id_token, access_token })
+    const email = googleUser.email
+    const encrypt = { email: email, password: 'Google' };
+    const token = await createTokenLogin(encrypt, privateKey);
+    return res.redirect(`http://localhost:3000/auth/sign-in?accessToken=${token}`)
+  } catch (error) {
+    return next(error)
+  }
 }
 const getOauthGoogleToken = async (code) => {
   const body = {

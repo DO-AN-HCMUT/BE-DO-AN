@@ -5,9 +5,12 @@ export const checkToken = (privateKey, token) => {
   try {
     if (token !== undefined) {
 
-      return jwt.verify(token, privateKey)
+      return {
+        payload:jwt.verify(token, privateKey),
+        message:"Success",
+        success:true
+      }
     } else {
-      console.log("error Token");
       const error = "error checkToken"
 
       return {
@@ -41,7 +44,7 @@ export const userValidator = async (req, res, next) => {
     console.log(userUnit);
     if (userUnit.success == true) {
       const result = await databaseProject.user.findOne({
-        email: userUnit.email,
+        email: userUnit.payload.email,
       });
       if (result) {
         console.log(JSON.stringify(result._id));
