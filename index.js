@@ -8,6 +8,7 @@ import { loginRoutes } from "./routes/loginRoutes.js";
 import { errorHandle } from "./errorhandler/errorhandler.js";
 import { userRoutes } from "./routes/userRoutes.js";
 import { taskRoutes } from "./routes/taskRoutes.js";
+import { chatRouter } from "./routes/chatRoutes.js";
 import { Server } from "socket.io";
 import { chatService } from "./services/chatService.js";
 
@@ -24,6 +25,7 @@ databaseProject.run()
 app.use("/auth",loginRoutes);
 app.use("/user",userRoutes);
 app.use("/task",taskRoutes);
+app.use("/chat",chatRouter)
 app.use(errorHandle);
 
 app.listen(port, () => {
