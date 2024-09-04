@@ -47,8 +47,7 @@ export const userValidator = async (req, res, next) => {
         email: userUnit.payload.email,
       });
       if (result) {
-        console.log(JSON.stringify(result._id));
-        req.userID = result._id;
+        req.userID = (result._id).toString();
         return next();
       } else {
         return res.status(400).json({
