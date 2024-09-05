@@ -6,7 +6,7 @@ export class User {
       (this.sex = user.sex || "other"),
       (this.password = user.password),
       (this.birthday = user.birthday?new Date(user.birthday):new Date() ) ,
-      this.avatar=user.avatar
+      this.avatar=user.avatar || ""
   }
 }
 export class Chat{

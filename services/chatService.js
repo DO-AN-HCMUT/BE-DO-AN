@@ -48,3 +48,16 @@ export const deleteChat=async(req,res,next)=>{
 		return next(error)
 	}
 }
+export const getAllChat=async(req,res,next)=>{
+	try {
+		const userID=req.userID
+		const result=await databaseProject.chat.find({"userIDs":{$all:[userID]}}).toArray()
+		return res.json({
+			payload:result,
+			message:"success",
+			success:true
+		})
+	} catch (error) {
+		return next(error)
+	}
+}
