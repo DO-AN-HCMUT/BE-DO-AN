@@ -1,9 +1,9 @@
 import axios from "axios";
 import jwt from "jsonwebtoken"
+import { checkToken } from "../middleware/validator/userValidator.js";
 const privateKey = process.env.PRIVATE_KEY;
 
 export const createTokenLogin = (data, privateKey) => {
-  console.log(data);
   return new Promise((resolve, reject) => {
     jwt.sign(
       { email: data.email, password: data.password },
@@ -88,3 +88,31 @@ const getGoogleUser = async ({ id_token, access_token }) => {
   )
   return data
 }
+export const checkTokenProcess = async (req, res, next) => {
+  const token = req.headers?.authorization?.split(" ")[1];
+  if (token == "undefined") {
+    return res.json({
+      payload: {},
+      message: "Access token is undefined",
+      success: false
+    })
+  } else {
+    const userUnit = checkToken(privateKey, token);
+    if (userUnit.success) {
+      return res.status(200).json({
+        payload: {},
+        message: "Success",
+        success: true
+      });
+    }
+    else {
+      return res.status(400).json({
+        payload: {},
+        message: userUnit.message,
+        success: false
+      });
+
+    }
+  }
+};
+

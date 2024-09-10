@@ -4,12 +4,10 @@ import bcrypt from "bcrypt";
 import databaseProject from "../mongodb.js";
 export const validator = (schema) => {
   return async (req, res, next) => {
-    console.log(req);
     await schema.run(req);
     const error = validationResult(req).mapped();
     if (Object.values(error).length > 0) {
       // next(error);
-      console.log(error);
       let msg = "";
       if (error.email) {
         msg = msg + error.email.msg;
@@ -109,7 +107,6 @@ export const validateLogin = validator(
             });
             if (userLogin) {
               checked = bcrypt.compareSync(value, userLogin.password);
-              console.log(checked);
               if (checked == true) {
                 return true;
               } else {

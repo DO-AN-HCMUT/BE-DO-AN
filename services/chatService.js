@@ -5,9 +5,7 @@ import { Chat } from "../Schema/schema.js";
 export const getChat = async (req, res, next) => {
 	try {
 		const secondId = req.params.id				
-		const result = await databaseProject.chat.findOne({"userIDs": [req.userID,(secondId)]});
-		console.log(result);
-		
+		const result = await databaseProject.chat.findOne({"userIDs": [req.userID,(secondId)]});		
 		return res.json({
 			payload:result,
 			message:"success",
@@ -17,11 +15,7 @@ export const getChat = async (req, res, next) => {
 		return next(error)
 	}
 }
-export const chatService = (socket) => {
-	socket.on("message", (message) => {
-		io.emit("broad", message)
-	});
-}
+
 export const makeChat = async (req, res, next) => {
 	try {
 		const item = new Chat(req.body)
@@ -49,9 +43,16 @@ export const deleteChat=async(req,res,next)=>{
 	}
 }
 export const getAllChat=async(req,res,next)=>{
-	try {
+	try {		
 		const userID=req.userID
-		const result=await databaseProject.chat.find({"userIDs":{$all:[userID]}}).toArray()
+		
+		const data=await databaseProject.chat.find({"userIDs":{$all:[userID]}}).toArray()
+		const result=data?.map((item)=>{
+			if(item.userIDs[0] === userID){
+				return item.userIDs[1]
+			}
+			return item.userIDs[0]
+		})
 		return res.json({
 			payload:result,
 			message:"success",

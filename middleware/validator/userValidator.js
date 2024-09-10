@@ -28,11 +28,7 @@ export const checkToken = (privateKey, token) => {
   }
 };
 export const userValidator = async (req, res, next) => {
-  console.log(req.headers);
-
   const token = req.headers?.authorization?.split(" ")[1];
-
-  console.log(token);
   if (token == "undefined") {
     return {
       payload: {},
@@ -41,12 +37,11 @@ export const userValidator = async (req, res, next) => {
     }
   } else {
     const userUnit = checkToken(privateKey, token);
-    console.log(userUnit);
-    if (userUnit.success == true) {
+    if (userUnit.success) {
       const result = await databaseProject.user.findOne({
         email: userUnit.payload.email,
-      });
-      if (result) {
+      });      
+      if (result) {        
         req.userID = (result._id).toString();
         return next();
       } else {

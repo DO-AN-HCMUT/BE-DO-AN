@@ -6,7 +6,6 @@ export const uploadItem = (req, res, next) => {
 	}
 	else {
 		const filePath = req.file.path;
-		console.log(filePath);
 		// This will give you the full path to the uploaded file
 		console.log('File uploaded to:', filePath);
 		fs.unlink(`${filePath}`, (error) => {

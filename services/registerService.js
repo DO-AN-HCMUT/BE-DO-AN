@@ -8,10 +8,8 @@ async function register(payload) {
   const existingAccount = await databaseProject.user.findOne({
     email: payload.email,
   });
-  console.log(existingAccount);
   if (!existingAccount) {
     const encryptPass = bcrypt.hashSync(payload.password, 10);
-    console.log("encrypt", encryptPass);
     await databaseProject.user.insertOne(
       new User({
         username: payload.email,
