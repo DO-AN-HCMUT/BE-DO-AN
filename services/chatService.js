@@ -54,7 +54,7 @@ export const getAllChat=async(req,res,next)=>{
 			return item.userIDs[0]
 		})
 		return res.json({
-			payload:result,
+			payload:{sender: userID,receiver:result},
 			message:"success",
 			success:true
 		})
