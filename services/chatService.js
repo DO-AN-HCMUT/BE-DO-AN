@@ -62,3 +62,17 @@ export const getAllChat=async(req,res,next)=>{
 		return next(error)
 	}
 }
+export const addMessage=async(req,res,next)=>{
+	try {
+		const {sender,receiver,message}=req.body;
+		const oldData=await databaseProject.chat.findOne({'userIDs':[sender,receiver]});
+		await databaseProject.chat.updateOne({'userIDs':[sender,receiver]},{$set: {message:[...oldData.message,message]}})
+		return res.json({
+			payload:{},
+			message:"success",
+			success:true
+		})
+	} catch (error) {
+		return next(error)
+	}
+}

@@ -36,6 +36,7 @@ const io = new Server(chatPort, {
 });
 const socketService= (socket) => {
 	socket.on("message", (message) => {
+
 		io.emit("broad", message)		
 	});
 }
