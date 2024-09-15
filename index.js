@@ -10,6 +10,7 @@ import { chatRouter } from "./routes/chatRoutes.js";
 import { loginRoutes } from "./routes/loginRoutes.js";
 import { taskRoutes } from "./routes/taskRoutes.js";
 import { userRoutes } from "./routes/userRoutes.js";
+import { projectRouter } from "./routes/projectRoutes.js";
 const app = express()
 const port = 4000
 const chatPort=5500
@@ -23,7 +24,8 @@ databaseProject.run()
 app.use("/auth",loginRoutes);
 app.use("/user",userRoutes);
 app.use("/task",taskRoutes);
-app.use("/chat",chatRouter)
+app.use("/chat",chatRouter);
+app.use("/project",projectRouter)
 app.use(errorHandle);
 
 app.listen(port, () => {

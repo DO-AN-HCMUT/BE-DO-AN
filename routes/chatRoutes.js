@@ -1,9 +1,9 @@
 import express from "express";
-import { addMessage, deleteChat, getAllChat, getChat, makeChat } from "../services/chatService.js";
 import { userValidator } from "../middleware/validator/userValidator.js";
+import { addMessage, deleteChat, getChat, getReceiver, makeChat } from "../services/chatService.js";
 
 export const chatRouter=express.Router();
-chatRouter.get("/all",userValidator,getAllChat)
+chatRouter.get("/all",userValidator,getReceiver)
 chatRouter.get("/:id",userValidator,getChat)
 chatRouter.post("/add",makeChat)
 chatRouter.put("/addMess",addMessage)

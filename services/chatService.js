@@ -42,7 +42,7 @@ export const deleteChat=async(req,res,next)=>{
 		return next(error)
 	}
 }
-export const getAllChat=async(req,res,next)=>{
+export const getReceiver=async(req,res,next)=>{
 	try {		
 		const userID=req.userID
 		

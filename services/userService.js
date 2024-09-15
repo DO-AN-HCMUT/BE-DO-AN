@@ -3,7 +3,9 @@ import databaseProject from "../mongodb.js";
 
 export const getMe= async (req,res,next)=>{
    try {
-    const result= await databaseProject.user.findOne({_id:req.userID});    
+    const result= await databaseProject.user.findOne({_id:new ObjectId(req.userID)});  
+    console.log(req.userID);
+      
    return res.status(200).json({
       payload: result,
       message: "Success",

@@ -19,7 +19,7 @@ async function register(payload) {
         gender: "other",
         sex: "",
         role: payload.role || "",
-        
+
       })
     );
   }
@@ -29,14 +29,16 @@ async function register(payload) {
 export const createRegisterAccess = async (req, res, next) => {
   try {
     const encrypt = { email: req.body.email, password: req.body.password };
-    await register(req.body);
+    const check = await register(req.body);
+
     const accessToken = await createTokenLogin(encrypt, privateKey);
-   
+
     return res.status(200).json({
       message: "Success",
-      payload:{accessToken},
-      success:true
+      payload: { accessToken },
+      success: true
     });
+
   } catch (error) {
     next(error);
   }
