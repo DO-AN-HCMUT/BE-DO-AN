@@ -31,7 +31,7 @@ export class Task{
     this.projectID=task.projectID,
     this.registeredMembers=task.registeredMembers || [],
     this.description=task.description || "",
-    this.status=task.status || "new",
+    this.status=task.status || "pending",
     this.endDate=task.endDate,
     this.createdDate=new Date()
   }
