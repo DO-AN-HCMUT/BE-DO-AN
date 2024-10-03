@@ -31,8 +31,9 @@ export const makeChat = async (req, res, next) => {
 }
 export const deleteChat=async(req,res,next)=>{
 	try {
-		const idChat=req.params.id
-		await databaseProject.chat.deleteOne({_id:ObjectId(idChat)})
+		const secondId = req.params.id				
+		const result = await databaseProject.chat.findOne({'userIDs': [req.userID,(secondId)]});	
+		 await databaseProject.chat.deleteOne({_id:new ObjectId(result._id)})
 		return res.json({
 			payload:{},
 			message:"success",

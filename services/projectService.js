@@ -26,7 +26,7 @@ export const getProject = async (req, res, next) => {
 		if (projectID) {
 			const result = await databaseProject.project.findOne({ _id: new ObjectId(projectID) });
 			return res.json({
-				payload: result[0],
+				payload: result,
 				success: true,
 				message: 'Success'
 			})

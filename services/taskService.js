@@ -1,5 +1,5 @@
 import { ObjectId } from "mongodb";
-import databaseProject from "../mongodb";
+import databaseProject from "../mongodb.js";
 
 export const getAllTask=async(req,res,next)=>{
 	const userID=req.userID;
