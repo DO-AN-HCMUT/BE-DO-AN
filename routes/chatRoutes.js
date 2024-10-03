@@ -4,7 +4,7 @@ import { addMessage, deleteChat, getChat, getReceiver, makeChat } from "../servi
 
 export const chatRouter=express.Router();
 chatRouter.get("/all",userValidator,getReceiver)
-chatRouter.get("/:id",userValidator,getChat)
-chatRouter.post("/add",makeChat)
+chatRouter.post("/create",makeChat)
 chatRouter.put("/addMess",addMessage)
 chatRouter.delete("/delete/:id",deleteChat)
+chatRouter.get("/:id",userValidator,getChat)
