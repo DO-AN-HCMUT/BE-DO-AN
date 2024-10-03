@@ -8,4 +8,4 @@ export const userRoutes=express.Router();
 
 userRoutes.get("/me",userValidator,getMe)
 userRoutes.get("/:id",getDetail)
-userRoutes.post("/uploadImg",upload.single("image"),uploadItem)
+// userRoutes.post("/uploadImg",upload.single("image"),uploadItem)

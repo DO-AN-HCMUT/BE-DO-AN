@@ -25,7 +25,7 @@ app.use("/auth",loginRoutes);
 app.use("/user",userRoutes);
 app.use("/task",taskRoutes);
 app.use("/chat",chatRouter);
-app.use("/project",projectRouter)
+app.use("/project",projectRouter);
 app.use(errorHandle);
 
 app.listen(port, () => {
