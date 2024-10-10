@@ -1,6 +1,10 @@
 import axios from "axios";
+import bcrypt from "bcrypt";
+
 import jwt from "jsonwebtoken";
 import { checkToken } from "../middleware/validator/userValidator.js";
+import databaseProject from "../mongodb.js";
+import { User } from "../Schema/schema.js";
 const privateKey = process.env.PRIVATE_KEY;
 const hashCount = parseInt(process.env.HASH_COUNT);
 const FEUrl=process.env.FE_URL;
