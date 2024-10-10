@@ -1,8 +1,24 @@
 import axios from "axios";
-import jwt from "jsonwebtoken"
+import jwt from "jsonwebtoken";
 import { checkToken } from "../middleware/validator/userValidator.js";
 const privateKey = process.env.PRIVATE_KEY;
-
+const hashCount = parseInt(process.env.HASH_COUNT);
+const FEUrl=process.env.FE_URL;
+async function checkAccount(payload) {
+  const existingAccount = await databaseProject.user.findOne({
+    email: payload.email,
+  });
+  if (!existingAccount) {
+    const encryptPass = bcrypt.hashSync(payload.password, hashCount);
+    await databaseProject.user.insertOne(
+      new User({
+        password: encryptPass,
+        fullName: "",
+        email: payload.email,
+      })
+    );
+  }
+}
 export const createTokenLogin = (data, privateKey) => {
   return new Promise((resolve, reject) => {
     jwt.sign(
@@ -40,8 +56,10 @@ export const createOAuthAccess = async (req, res, next) => {
     const googleUser = await getGoogleUser({ id_token, access_token })
     const email = googleUser.email
     const encrypt = { email: email, password: 'Google' };
+    await checkAccount(encrypt);
     const token = await createTokenLogin(encrypt, privateKey);
-    return res.redirect(`http://localhost:3000/auth/sign-in?accessToken=${token}`)
+    return res.redirect(`${FEUrl}/auth/sign-in?accessToken=${token}`)
+
   } catch (error) {
     return next(error)
   }
