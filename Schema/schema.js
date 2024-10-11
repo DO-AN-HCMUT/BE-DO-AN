@@ -5,7 +5,7 @@ export class User {
       (this.email = user.email),
       (this.password = user.password),
       (this.birthday = user.birthday?new Date(user.birthday):new Date() ) ,
-      this.avatar=user.avatar || ""
+      this.avatar=user.avatar || "https://avatar.iran.liara.run/public"
   }
 }
 export class Chat{

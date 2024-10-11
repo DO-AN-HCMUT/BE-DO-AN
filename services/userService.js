@@ -29,3 +29,16 @@ export const getDetail= async (req,res,next)=>{
     return next(error)
    }
 }
+export const updateProfile= async (req,res,next)=>{
+   try {
+      const userID=req.userID;
+      await databaseProject.user.updateOne({_id:new ObjectId(userID)},{$set:req.body});
+      return res.json({
+         payload: {},
+         message: "Success",
+         success: true
+       });
+   } catch (error) {
+      return next(error);
+   }
+}
