@@ -20,9 +20,9 @@ export class Project{
   constructor(project){
     this.leaderID=project.leaderID,
     this.members=project.members || [],
-    // this.chatIDs=project.chatIDs || [],
     this.createdDate=new Date(),
-    this.taskIDs=project.taskIDs || []
+    this.taskIDs=project.taskIDs || [],
+    this.projectName=project.projectName
   }
 }
 export class Task{
