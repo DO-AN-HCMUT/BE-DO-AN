@@ -4,9 +4,9 @@ import { Project, Task } from "../Schema/schema.js";
 
 export const makeProject = async (req, res, next) => {
 	const leaderID = req.userID;
-	const { members, taskIDs } = req.body;
+	const { members, taskIDs,projectName } = req.body;
 	const projectItem = new Project({
-		members, taskIDs, leaderID
+		members, taskIDs, leaderID,projectName
 	})
 	try {
 		await databaseProject.project.insertOne(projectItem);

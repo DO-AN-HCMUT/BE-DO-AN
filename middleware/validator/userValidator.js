@@ -10,7 +10,7 @@ export const checkToken = (privateKey, token) => {
         message:"Success",
         success:true
       }
-    } else {
+    } else {      
       const error = "error checkToken"
 
       return {

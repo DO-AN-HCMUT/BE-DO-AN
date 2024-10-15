@@ -59,12 +59,17 @@ export const getAllProject = async (req, res, next) => {
       else{
          result=listOfProject;
       }
-      if (paging > 0 && paging < result.length()) {
-         return res.json({
-            payload: result.slice(5 * (paging - 1), 5 * (paging - 1) + 4),
-            message: `list of project in page ${paging}`,
-            success: true
-         })
+      if(paging){
+         if (paging > 0) {
+            return res.json({
+               payload: result.slice(5 * (paging - 1), 5 * (paging - 1) + 4),
+               message: `list of project in page ${paging}`,
+               success: true
+            })
+         }
+         else{
+            return next('error: paging query')
+         }
       }
       else {
          return res.json({
@@ -73,6 +78,7 @@ export const getAllProject = async (req, res, next) => {
             success: true
          })
       }
+   
    } catch (error) {
       return next(error);
    }
