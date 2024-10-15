@@ -87,3 +87,32 @@ export const getAllProject = async (req, res, next) => {
       return next(error);
    }
 }
+export const getAllFriend=async (req,res,next)=>{
+   try {
+      const userID=req.userID;
+      const projectListOwner=await databaseProject.project.find({leaderID:userID}).toArray();
+      const projectListMember=await databaseProject.project.find({members:userID}).toArray();
+      Promise.all(
+         [projectListMember,projectListOwner]
+      )
+      let friendList=[];
+      projectListOwner.forEach((item,index)=>{
+         if(friendList.filter((childItem)=>item.members.includes(childItem)).length<=0){
+            friendList.push(...item.members);           
+         }
+         
+      })
+      projectListMember.forEach((item,index)=>{
+         if(!friendList.includes(item.leaderID)){
+            friendList.push(item.leaderID)            
+         }
+      })
+      return res.json({
+         payload: friendList,
+         message: `list user's friend`,
+         success: true
+      })
+   } catch (error) {
+      return next(error)
+   }
+}
