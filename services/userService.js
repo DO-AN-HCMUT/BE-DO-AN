@@ -46,20 +46,24 @@ export const getAllProject = async (req, res, next) => {
    try {
       const userID = req.userID;
       const paging = Number(req.query?.paging);
-      const searching = req.query?.searching;
+      const searching = (req.query?.searching);
+
       const listOfProject = await databaseProject.project.find({ $or: [{ leaderID: userID }, { members: userID }] }).toArray();
-      let result=listOfProject;
-      if(searching){
-         result=listOfProject.map((item,index)=>{
-            if(item.projectName.includes(searching)){
-               return item
+      console.log('userID', userID);
+
+      let result = listOfProject;
+      if (searching) {
+         result = listOfProject.filter((item, index) => {
+            if (item.projectName.includes(decodeURI(searching))) {
+               return true
             }
+            return false
          })
       }
-      else{
-         result=listOfProject;
+      else {
+         result = listOfProject;
       }
-      if(paging){
+      if (paging) {
          if (paging > 0) {
             return res.json({
                payload: result.slice(5 * (paging - 1), 5 * (paging - 1) + 4),
@@ -67,7 +71,7 @@ export const getAllProject = async (req, res, next) => {
                success: true
             })
          }
-         else{
+         else {
             return next('error: paging query')
          }
       }
@@ -78,7 +82,7 @@ export const getAllProject = async (req, res, next) => {
             success: true
          })
       }
-   
+
    } catch (error) {
       return next(error);
    }
