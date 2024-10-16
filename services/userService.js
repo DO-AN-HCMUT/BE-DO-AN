@@ -87,31 +87,51 @@ export const getAllProject = async (req, res, next) => {
       return next(error);
    }
 }
-export const getAllFriend=async (req,res,next)=>{
+export const getAllFriend = async (req, res, next) => {
    try {
-      const userID=req.userID;
-      const projectListOwner=await databaseProject.project.find({leaderID:userID}).toArray();
-      const projectListMember=await databaseProject.project.find({members:userID}).toArray();
+      const userID = req.userID;
+      const projectListOwner = await databaseProject.project.find({ leaderID: userID }).toArray();
+      const projectListMember = await databaseProject.project.find({ members: userID }).toArray();
       Promise.all(
-         [projectListMember,projectListOwner]
+         [projectListMember, projectListOwner]
       )
-      let friendList=[];
-      projectListOwner.forEach((item,index)=>{
-         if(friendList.filter((childItem)=>item.members.includes(childItem)).length<=0){
-            friendList.push(...item.members);           
+      let friendList = [];
+      projectListOwner.forEach((item) => {
+         if (friendList.filter((childItem) => item.members.includes(childItem)).length <= 0) {
+            friendList.push(...item.members);
          }
-         
+
       })
-      projectListMember.forEach((item,index)=>{
-         if(!friendList.includes(item.leaderID)){
-            friendList.push(item.leaderID)            
+      projectListMember.forEach((item) => {
+         if (!friendList.includes(item.leaderID)) {
+            friendList.push(item.leaderID)
          }
       })
-      return res.json({
-         payload: friendList,
-         message: `list user's friend`,
-         success: true
-      })
+      if (friendList.length > 0) {
+         const friendIDs=friendList.map((item)=> new ObjectId(item));
+         const friendData = await databaseProject.user.find({ _id: { $in: friendIDs } }).toArray();
+         const payload = friendData.map((item) => {
+            return {
+               id: item._id,
+               fullName: item.fullName,
+               avatar: item.avatar,
+            }
+         })
+         return res.json({
+            payload: payload,
+            message: `list user's friend`,
+            success: true
+         })
+
+      }
+      else {
+         return res.json({
+            payload: [],
+            message: `No friend`,
+            success: true
+         })
+      }
+
    } catch (error) {
       return next(error)
    }
