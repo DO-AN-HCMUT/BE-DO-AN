@@ -127,3 +127,20 @@ export const createTask = async (req, res, next) => {
     return next(error);
   }
 };
+
+export const getAllTasks = async (req, res, next) => {
+  const { projectID } = req.params;
+
+  try {
+    const result = await databaseProject.task
+      .find({ projectID: { $in: [projectID] } })
+      .toArray();
+    return res.json({
+      payload: result,
+      success: true,
+      message: "Success",
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
