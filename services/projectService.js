@@ -4,12 +4,20 @@ import { Project, Task } from "../Schema/schema.js";
 
 export const makeProject = async (req, res, next) => {
   const leaderID = req.userID;
-  const { members, taskIDs, projectName } = req.body;
+  const { members, projectName } = req.body;
+
+  const code = projectName
+    .split(" ")
+    .slice(0, 3)
+    .map((word) => word[0])
+    .join("")
+    .toUpperCase();
+
   const projectItem = new Project({
     members,
-    taskIDs,
     leaderID,
     projectName,
+    code,
   });
   try {
     await databaseProject.project.insertOne(projectItem);
@@ -106,12 +114,19 @@ export const deleteProject = async (req, res, next) => {
     return next(error);
   }
 };
+
 export const createTask = async (req, res, next) => {
   const projectID = req.query?.projectID;
   const taskDetail = req.body;
 
+  const project = await databaseProject.project.findOne({
+    _id: new ObjectId(projectID),
+  });
+
+  const code = project.code + "-" + (project.taskIDs.length + 1);
+
   try {
-    const taskItem = new Task({ projectID, ...taskDetail });
+    const taskItem = new Task({ ...taskDetail, projectID, code });
     const result = await databaseProject.task.insertOne(taskItem);
     const insertID = result.insertedId;
     await databaseProject.project.updateOne(
