@@ -4,27 +4,26 @@ const privateKey = process.env.PRIVATE_KEY;
 export const checkToken = (privateKey, token) => {
   try {
     if (token !== undefined) {
-
       return {
-        payload:jwt.verify(token, privateKey),
-        message:"Success",
-        success:true
-      }
-    } else {      
-      const error = "error checkToken"
+        payload: jwt.verify(token, privateKey),
+        message: "Success",
+        success: true,
+      };
+    } else {
+      const error = "error checkToken";
 
       return {
         payload: {},
         message: error,
-        success: false
+        success: false,
       };
     }
   } catch (error) {
     return {
       payload: {},
       message: error,
-      success: false
-    }
+      success: false,
+    };
   }
 };
 export const userValidator = async (req, res, next) => {
@@ -33,32 +32,30 @@ export const userValidator = async (req, res, next) => {
     return {
       payload: {},
       message: "Access token is undefined",
-      success: false
-    }
+      success: false,
+    };
   } else {
     const userUnit = checkToken(privateKey, token);
     if (userUnit.success) {
       const result = await databaseProject.user.findOne({
         email: userUnit.payload.email,
-      });      
-      if (result) {        
-        req.userID = (result._id).toString();
+      });
+      if (result) {
+        req.userID = result._id.toString();
         return next();
       } else {
         return res.status(400).json({
           payload: {},
           message: "Access token is wrong",
-          success: false
+          success: false,
         });
       }
-    }
-    else {
+    } else {
       return res.status(400).json({
         payload: {},
         message: userUnit.message,
-        success: false
+        success: false,
       });
-
     }
   }
 };

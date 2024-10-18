@@ -4,9 +4,9 @@ import { User } from "../Schema/schema.js";
 import databaseProject from "../mongodb.js";
 import { createTokenLogin } from "./loginService.js";
 const privateKey = process.env.PRIVATE_KEY;
-const hashCount=parseInt(process.env.HASH_COUNT);
+const hashCount = parseInt(process.env.HASH_COUNT);
 
- async function register(payload) {
+async function register(payload) {
   const existingAccount = await databaseProject.user.findOne({
     email: payload.email,
   });
@@ -17,7 +17,7 @@ const hashCount=parseInt(process.env.HASH_COUNT);
         password: encryptPass,
         fullName: "",
         email: payload.email,
-      })
+      }),
     );
   }
 }
@@ -32,9 +32,8 @@ export const createRegisterAccess = async (req, res, next) => {
     return res.status(200).json({
       message: "Success",
       payload: { accessToken },
-      success: true
+      success: true,
     });
-
   } catch (error) {
     next(error);
   }
