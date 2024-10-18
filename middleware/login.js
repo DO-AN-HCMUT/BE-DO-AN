@@ -21,7 +21,7 @@ export const validator = (schema) => {
       return res.status(400).json({
         payload: {},
         message: msg,
-        success: false
+        success: false,
       });
     }
     next();
@@ -70,8 +70,8 @@ export const validateRegister = validator(
         },
       },
     },
-    ["body"]
-  )
+    ["body"],
+  ),
 );
 export const validateLogin = validator(
   checkSchema(
@@ -117,6 +117,6 @@ export const validateLogin = validator(
         },
       },
     },
-    ["body"]
-  )
+    ["body"],
+  ),
 );

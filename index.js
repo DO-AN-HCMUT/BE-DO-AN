@@ -11,35 +11,34 @@ import { loginRoutes } from "./routes/loginRoutes.js";
 import { taskRoutes } from "./routes/taskRoutes.js";
 import { userRoutes } from "./routes/userRoutes.js";
 import { projectRouter } from "./routes/projectRoutes.js";
-const app = express()
-const port = 4000
-const chatPort=5500
+const app = express();
+const port = 4000;
+const chatPort = 5500;
 config();
-app.use(helmet())
-app.use(express.json())
-app.use(morgan('combined'))
+app.use(helmet());
+app.use(express.json());
+app.use(morgan("combined"));
 
-app.use(cors())
-databaseProject.run()
-app.use("/auth",loginRoutes);
-app.use("/user",userRoutes);
-app.use("/task",taskRoutes);
-app.use("/chat",chatRouter);
-app.use("/project",projectRouter);
+app.use(cors());
+databaseProject.run();
+app.use("/auth", loginRoutes);
+app.use("/user", userRoutes);
+app.use("/task", taskRoutes);
+app.use("/chat", chatRouter);
+app.use("/project", projectRouter);
 app.use(errorHandle);
 
 app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`)
-  })
-const io = new Server(chatPort, {
-    cors: {
-      origin: '*',
-    }
+  console.log(`Example app listening on port ${port}`);
 });
-const socketService= (socket) => {
-	socket.on("message", (message) => {
-
-		io.emit("broad", message)		
-	});
-}
-io.on("connection", socketService );
+const io = new Server(chatPort, {
+  cors: {
+    origin: "*",
+  },
+});
+const socketService = (socket) => {
+  socket.on("message", (message) => {
+    io.emit("broad", message);
+  });
+};
+io.on("connection", socketService);
