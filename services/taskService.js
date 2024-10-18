@@ -5,7 +5,7 @@ export const getAllTask = async (req, res, next) => {
   const userID = req.userID;
   try {
     const payload = await databaseProject.task
-      .find({ registeredMembers: new ObjectId(userID) })
+      .find({ registeredMembers: { $in: [userID] } })
       .toArray();
     return res.json({
       payload: payload,
