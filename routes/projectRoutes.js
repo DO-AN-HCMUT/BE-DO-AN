@@ -8,6 +8,7 @@ import {
   deleteProject,
   getProject,
   makeProject,
+  getAllTasks,
 } from "../services/projectService.js";
 
 export const projectRouter = express.Router();
@@ -18,3 +19,4 @@ projectRouter.put("/deleteMember", deleteMember);
 projectRouter.post("/createTask", createTask);
 projectRouter.get("/get", userValidator, getProject);
 projectRouter.delete("/deleteProject", userValidator, deleteProject);
+projectRouter.get("/:projectID/tasks", getAllTasks);
