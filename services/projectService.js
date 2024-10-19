@@ -154,6 +154,7 @@ export const createTask = async (req, res, next) => {
 
 export const getMembers = async (req, res, next) => {
   const projectID = req.params.projectID;
+  const search = req.query?.q;
 
   try {
     const project = await databaseProject.project.findOne({
@@ -165,7 +166,10 @@ export const getMembers = async (req, res, next) => {
     }
 
     const populatedMembers = await databaseProject.user
-      .find({ _id: { $in: project.members.map((id) => new ObjectId(id)) } })
+      .find({
+        _id: { $in: project.members.map((id) => new ObjectId(id)) },
+        fullName: { $regex: search || "", $options: "i" },
+      })
       .toArray();
 
     return res.json({
