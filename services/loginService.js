@@ -17,7 +17,7 @@ async function checkAccount(payload) {
     await databaseProject.user.insertOne(
       new User({
         password: encryptPass,
-        fullName: "",
+        fullName: payload.email.split('@')[0],
         email: payload.email,
       }),
     );
