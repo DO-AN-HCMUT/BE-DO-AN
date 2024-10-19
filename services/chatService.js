@@ -6,7 +6,7 @@ export const getChat = async (req, res, next) => {
   try {
     const secondId = req.params.id;
     const result = await databaseProject.chat.findOne({
-      userIDs: [req.userID, secondId],
+      userIDs: { $all: [req.userID, secondId] },
     });
     return res.json({
       payload: result,
@@ -42,7 +42,7 @@ export const deleteChat = async (req, res, next) => {
   try {
     const secondId = req.params.id;
     const result = await databaseProject.chat.findOne({
-      userIDs: [req.userID, secondId],
+      userIDs: { $all: [req.userID, secondId] },
     });
     await databaseProject.chat.deleteOne({ _id: new ObjectId(result._id) });
     return res.json({
@@ -80,10 +80,10 @@ export const addMessage = async (req, res, next) => {
   try {
     const { sender, receiver, message } = req.body;
     const oldData = await databaseProject.chat.findOne({
-      userIDs: [sender, receiver],
+      userIDs: { $all: [sender, receiver] },
     });
     await databaseProject.chat.updateOne(
-      { userIDs: [sender, receiver] },
+      { userIDs: { $all: [sender, receiver] } },
       { $set: { message: [...oldData.message, message] } },
     );
     return res.json({
