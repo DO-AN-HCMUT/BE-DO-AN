@@ -55,12 +55,21 @@ export const addMember = async (req, res, next) => {
   const projectID = req.query?.projectID;
   const { memberIDS } = req.body;
   try {
-    const oldMemberIDs = await databaseProject.project.findOne({
+    const project = await databaseProject.project.findOne({
       _id: new ObjectId(projectID),
-    })?.members;
+    });
+
+    if (!project) {
+      throw new Error("Project not found");
+    }
+
+    const newMemberIds = memberIDS.filter(
+      (id) => !project.members.includes(id),
+    );
+
     await databaseProject.project.updateOne(
       { _id: new ObjectId(projectID) },
-      { members: [...oldMemberIDs, memberIDS] },
+      { $set: { members: [...project.members, ...newMemberIds] } },
     );
     return res.json({
       payload: {},
@@ -120,6 +129,32 @@ export const createTask = async (req, res, next) => {
     );
     return res.json({
       payload: {},
+      success: true,
+      message: "Success",
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getMembers = async (req, res, next) => {
+  const projectID = req.params.projectID;
+
+  try {
+    const project = await databaseProject.project.findOne({
+      _id: new ObjectId(projectID),
+    });
+
+    if (!project) {
+      throw new Error("Project not found");
+    }
+
+    const populatedMembers = await databaseProject.user
+      .find({ _id: { $in: project.members.map((id) => new ObjectId(id)) } })
+      .toArray();
+
+    return res.json({
+      payload: populatedMembers,
       success: true,
       message: "Success",
     });
