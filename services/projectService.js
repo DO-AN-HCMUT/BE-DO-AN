@@ -147,9 +147,22 @@ export const getAllTasks = async (req, res, next) => {
   const { projectID } = req.params;
 
   try {
-    const result = await databaseProject.task
-      .find({ projectID: { $in: [projectID] } })
-      .toArray();
+    const result = await Promise.all(
+      (
+        await databaseProject.task
+          .find({ projectID: { $in: [projectID] } })
+          .toArray()
+      ).map(async (item) => {
+        const userIds = item.registeredMembers;
+        const users = await databaseProject.user
+          .find({
+            _id: { $in: userIds.map((id) => new ObjectId(id)) },
+          })
+          .toArray();
+
+        return { ...item, registeredMembers: users };
+      }),
+    );
     return res.json({
       payload: result,
       success: true,
