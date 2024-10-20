@@ -11,5 +11,5 @@ export const taskRoutes = express.Router();
 
 taskRoutes.get("/getDetail/:id", getDetailTask);
 taskRoutes.get("/getAll", userValidator, getAllTask);
-taskRoutes.put("/update/:id", updateTask);
-taskRoutes.post("/uploadFile", upload.single("file"), uploadItem);
+taskRoutes.post("/upload", upload.single("file"), uploadItem);
+taskRoutes.put("/:id/update", updateTask);

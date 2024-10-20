@@ -68,7 +68,7 @@ export const addMember = async (req, res, next) => {
     });
 
     if (!project) {
-      throw new Error("Project not found");
+      return next("Project not found");
     }
 
     const newMemberIds = memberIDS.filter(
@@ -162,7 +162,7 @@ export const getMembers = async (req, res, next) => {
     });
 
     if (!project) {
-      throw new Error("Project not found");
+      return next("Project not found");
     }
 
     const populatedMembers = await databaseProject.user
