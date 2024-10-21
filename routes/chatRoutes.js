@@ -13,4 +13,4 @@ chatRouter.get("/all", userValidator, getReceiver);
 chatRouter.post("/create", makeChat);
 chatRouter.put("/addMess", addMessage);
 chatRouter.delete("/:id/delete/", userValidator, deleteChat);
-chatRouter.get("/:id", userValidator, getChat);
+chatRouter.get("/:id/detail", userValidator, getChat);

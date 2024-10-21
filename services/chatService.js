@@ -50,6 +50,7 @@ export const deleteChat = async (req, res, next) => {
       message: "success",
       success: true,
     });
+
   } catch (error) {
     return next(error);
   }
