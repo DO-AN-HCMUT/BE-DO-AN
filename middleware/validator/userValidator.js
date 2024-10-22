@@ -53,7 +53,7 @@ export const userValidator = async (req, res, next) => {
     } else {
       return res.status(400).json({
         payload: {},
-        message: userUnit.message,
+        message: userUnit.message.name,
         success: false,
       });
     }
