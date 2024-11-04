@@ -37,8 +37,29 @@ const io = new Server(chatPort, {
   },
 });
 const socketService = (socket) => {
-  socket.on("message", (message) => {
-    io.emit("broad", message);
-  });
+
+  // socket.on("message", (message) => {
+  //   io.emit("broad", message);
+  // });
+  const users = [];
+  const username = socket.handshake.auth.username;
+  if (!username) {
+    console.log('socket error');
+    return;
+  }
+  socket.username = username;
+  for (let [id, socket] of io.of("/").sockets) {
+    if (users.filter((item) => item.socketName == socket.username).length < 1)
+      users.push({
+        socketID: id,
+        socketName: socket.username,
+      });
+  }
+  socket.emit("users", users);
+  socket.on('message', (payload) => {
+    console.log(payload);
+
+    io.to(`${payload.socketID}`).emit('private', `${payload.content}`)
+  })
 };
 io.on("connection", socketService);
