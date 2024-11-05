@@ -49,7 +49,7 @@ const socketService = (socket) => {
   }
   socket.username = username;
   for (let [id, socket] of io.of("/").sockets) {
-    if (users.filter((item) => item.socketName == socket.username).length < 1)
+    if (users.filter((item) => item.socketName == socket.username).length < 1 && socket.username !== undefined)
       users.push({
         socketID: id,
         socketName: socket.username,
@@ -57,8 +57,6 @@ const socketService = (socket) => {
   }
   socket.emit("users", users);
   socket.on('message', (payload) => {
-    console.log(payload);
-
     io.to(`${payload.socketID}`).emit('private', `${payload.content}`)
   })
 };

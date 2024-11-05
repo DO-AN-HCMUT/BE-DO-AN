@@ -9,7 +9,7 @@ import {
 import { uploadItem } from "../util/uploadItem.js";
 export const taskRoutes = express.Router();
 
-taskRoutes.get("/getDetail/:id", getDetailTask);
+taskRoutes.get("/:id/getDetail", getDetailTask);
 taskRoutes.get("/getAll", userValidator, getAllTask);
 taskRoutes.post("/upload", upload.single("file"), uploadItem);
 taskRoutes.put("/:id/update", updateTask);
