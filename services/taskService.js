@@ -48,3 +48,19 @@ export const updateTask = async (req, res, next) => {
     return next(error);
   }
 };
+export const deleteTask= async(req,res,next)=>{
+  const projectID = req.query?.projectID;
+  const taskID = req.params.id;
+  try {
+   const oldData= await databaseProject.project.findOne({_id:new ObjectId(projectID)})[0];
+   const newTasks=oldData.taskIDs.filters((item)=> item !== taskID);
+   await databaseProject.project.updateOne({_id:new ObjectId(projectID)},{$set:{'taskIDs':newTasks}});
+   return res.json({
+    payload: {},
+    success: true,
+    message: "Success",
+  });
+  } catch (error) {
+    return next(error);
+  }
+}

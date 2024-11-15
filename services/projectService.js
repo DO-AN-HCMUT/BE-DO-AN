@@ -114,6 +114,7 @@ export const deleteProject = async (req, res, next) => {
   const projectID = req.query?.projectID;
   try {
     await databaseProject.project.deleteOne({ _id: new ObjectId(projectID) });
+    await databaseProject.task.deleteMany({projectID:projectID});
     return res.json({
       payload: {},
       success: true,
