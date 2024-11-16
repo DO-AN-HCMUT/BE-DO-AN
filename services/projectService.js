@@ -32,7 +32,7 @@ export const makeProject = async (req, res, next) => {
 };
 export const getProject = async (req, res, next) => {
   const leaderID = req.userID;
-  const projectID = req.query?.projectID;
+  const projectID = req.params.projectID;
   try {
     if (projectID) {
       const result = await databaseProject.project.findOne({
@@ -60,7 +60,7 @@ export const getProject = async (req, res, next) => {
   }
 };
 export const addMember = async (req, res, next) => {
-  const projectID = req.query?.projectID;
+  const projectID = req.params?.projectID;
   const { memberIDS } = req.body;
   try {
     const project = await databaseProject.project.findOne({
@@ -89,7 +89,7 @@ export const addMember = async (req, res, next) => {
   }
 };
 export const deleteMember = async (req, res, next) => {
-  const projectID = req.query?.projectID;
+  const projectID = req.params?.projectID;
   const { memberIDS } = req.body;
   try {
     const oldMemberIDs = await databaseProject.project.findOne({
@@ -111,7 +111,7 @@ export const deleteMember = async (req, res, next) => {
   }
 };
 export const deleteProject = async (req, res, next) => {
-  const projectID = req.query?.projectID;
+  const projectID = req.params?.projectID;
   try {
     await databaseProject.project.deleteOne({ _id: new ObjectId(projectID) });
     await databaseProject.task.deleteMany({projectID:projectID});
@@ -126,7 +126,7 @@ export const deleteProject = async (req, res, next) => {
 };
 
 export const createTask = async (req, res, next) => {
-  const projectID = req.query?.projectID;
+  const projectID = req.params?.projectID;
   const taskDetail = req.body;
 
   const project = await databaseProject.project.findOne({
@@ -155,7 +155,7 @@ export const createTask = async (req, res, next) => {
 
 export const getMembers = async (req, res, next) => {
   const projectID = req.params.projectID;
-  const search = req.query?.q;
+  const search = req.query?.search;
 
   try {
     const project = await databaseProject.project.findOne({
