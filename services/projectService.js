@@ -1,6 +1,9 @@
 import { ObjectId } from "mongodb";
 import databaseProject from "../mongodb.js";
 import { Project, Task } from "../Schema/schema.js";
+import fs from "fs";
+import nodemailer from "nodemailer";
+import path from "path";
 
 export const makeProject = async (req, res, next) => {
   const leaderID = req.userID;
@@ -114,7 +117,7 @@ export const deleteProject = async (req, res, next) => {
   const projectID = req.params?.projectID;
   try {
     await databaseProject.project.deleteOne({ _id: new ObjectId(projectID) });
-    await databaseProject.task.deleteMany({projectID:projectID});
+    await databaseProject.task.deleteMany({ projectID: projectID });
     return res.json({
       payload: {},
       success: true,
@@ -212,3 +215,45 @@ export const getAllTasks = async (req, res, next) => {
     return next(error);
   }
 };
+// mail 
+const contractMail = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "lightwing2208@gmail.com",
+    pass: process.env.PASS_MAIL,
+  },
+});
+contractMail.verify((error) => {
+  if (error) {
+    console.log(error);
+    // return next(error)
+  }
+  else {
+    console.log("ready to send");
+
+  }
+})
+
+export const sendInvitation = (req, res, next) => {
+  const inviterMail=req.userMail;
+  const {guestMail,projectName}=req.body;  
+  const template = fs.readFileSync(path.resolve('mailTemplate/invitation.html'), "utf-8").replaceAll("{{projectName}}",projectName).replace("{{inviter}}",inviterMail);
+  const sentMail = {
+    from: "lightwing2208@gmail.com",
+    to: guestMail,
+    subject: "INVITATION",
+    html: template
+  }
+  contractMail.sendMail(sentMail, (error) => {
+    if (error) {      
+      return next(error);
+    }
+    else {
+      return res.json({
+        payload: {},
+        success: true,
+        message: "Success",
+      });
+    }
+  })
+}

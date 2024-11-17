@@ -9,12 +9,14 @@ import {
   getProject,
   makeProject,
   getAllTasks,
+  sendInvitation,
 } from "../services/projectService.js";
 
 export const projectRouter = express.Router();
 projectRouter.post("/new", userValidator, makeProject);
 projectRouter.get("/:projectID/members", getMembers);
 projectRouter.post("/:projectID/addMember", addMember);
+projectRouter.post("/:projectID/sendInvitation", userValidator,sendInvitation);
 projectRouter.put("/:projectID/deleteMember", deleteMember);
 projectRouter.post("/:projectID/createTask", createTask);
 projectRouter.get("/get", userValidator, getProject);

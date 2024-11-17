@@ -42,6 +42,8 @@ export const userValidator = async (req, res, next) => {
       });
       if (result) {
         req.userID = result._id.toString();
+        req.userMail = result.email;
+
         return next();
       } else {
         return res.status(400).json({
@@ -50,7 +52,7 @@ export const userValidator = async (req, res, next) => {
           success: false,
         });
       }
-    } else {
+    } else {      
       return res.status(400).json({
         payload: {},
         message: userUnit.message.name,
