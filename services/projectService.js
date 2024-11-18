@@ -237,6 +237,9 @@ contractMail.verify((error) => {
 export const sendInvitation = (req, res, next) => {
   const inviterMail=req.userMail;
   const {guestMail,projectName}=req.body;  
+  if(!projectName){
+    return next('Missing parameter: projectName');
+  }
   const template = fs.readFileSync(path.resolve('mailTemplate/invitation.html'), "utf-8").replaceAll("{{projectName}}",projectName).replace("{{inviter}}",inviterMail);
   const sentMail = {
     from: "lightwing2208@gmail.com",

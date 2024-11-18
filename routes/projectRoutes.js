@@ -19,6 +19,6 @@ projectRouter.post("/:projectID/addMember", addMember);
 projectRouter.post("/:projectID/sendInvitation", userValidator,sendInvitation);
 projectRouter.put("/:projectID/deleteMember", deleteMember);
 projectRouter.post("/:projectID/createTask", createTask);
-projectRouter.get("/get", userValidator, getProject);
+projectRouter.get("/:projectID/get", userValidator, getProject);
 projectRouter.delete("/:projectID/deleteProject", userValidator, deleteProject);
 projectRouter.get("/:projectID/tasks", getAllTasks);
