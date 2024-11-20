@@ -3,9 +3,10 @@ import databaseProject from "../mongodb.js";
 
 export const getAllTask = async (req, res, next) => {
   const userID = req.userID;
+  const search=req.query?.search;
   try {
     const payload = await databaseProject.task
-      .find({ registeredMembers: { $in: [userID] } })
+      .find({ registeredMembers: { $in: [userID] },fullName: { $regex: search || "", $options: "i" } })
       .toArray();
     return res.json({
       payload: payload,
