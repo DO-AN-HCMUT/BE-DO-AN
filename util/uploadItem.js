@@ -15,7 +15,6 @@ const uploadCloudinary = async (item) => {
       fetch_format: 'auto',
       quality: 'auto'
     });
-    console.log(optimizeUrl);
     return optimizeUrl
   } catch (error) {
     return false
@@ -24,7 +23,6 @@ const uploadCloudinary = async (item) => {
 export const uploadAvatar = async (req, res, next) => {
   // Configuration
   const userID=req.userID;
-  console.log(userID);
   
   cloudinary.config({
     cloud_name: 'drjfybihf',
