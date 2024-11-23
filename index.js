@@ -12,7 +12,6 @@ import { taskRoutes } from "./routes/taskRoutes.js";
 import { userRoutes } from "./routes/userRoutes.js";
 import { projectRouter } from "./routes/projectRoutes.js";
 const app = express();
-const port = 4000;
 const chatPort = 5500;
 config();
 app.use(helmet());
@@ -28,8 +27,10 @@ app.use("/chat", chatRouter);
 app.use("/project", projectRouter);
 app.use(errorHandle);
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
+const PORT = process.env.PORT || 4000;
+
+app.listen(PORT, () => {
+  console.log(`Example app listening on port ${PORT}`);
 });
 const io = new Server(chatPort, {
   cors: {
