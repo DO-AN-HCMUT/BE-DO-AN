@@ -64,7 +64,7 @@ export const getProject = async (req, res, next) => {
 };
 export const addMember = async (req, res, next) => {
   const projectID = req.params?.projectID;
-  const { memberIDS } = req.body;
+  const { memberIDs } = req.body;
   try {
     const project = await databaseProject.project.findOne({
       _id: new ObjectId(projectID),
@@ -74,7 +74,7 @@ export const addMember = async (req, res, next) => {
       return next("Project not found");
     }
 
-    const newMemberIds = memberIDS.filter(
+    const newMemberIds = memberIDs.filter(
       (id) => !project.members.includes(id),
     );
 
@@ -82,6 +82,37 @@ export const addMember = async (req, res, next) => {
       { _id: new ObjectId(projectID) },
       { $set: { members: [...project.members, ...newMemberIds] } },
     );
+    return res.json({
+      payload: {},
+      success: true,
+      message: "Success",
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+export const verifyMember = async (req, res, next) => {
+  const projectID = req.params?.projectID;
+  const userID = req.userID;
+  try {
+    const project = await databaseProject.project.findOne({
+      _id: new ObjectId(projectID),
+    });
+
+    if (!project) {
+      return next("Project not found");
+    }
+
+    const newMemberIds = project.members.filter(
+      (id) => id === userID,
+    );
+    if (newMemberIds.length <= 0) {
+      await databaseProject.project.updateOne(
+        { _id: new ObjectId(projectID) },
+        { $set: { members: [...project.members, userID] } },
+      );
+    }
+
     return res.json({
       payload: {},
       success: true,
@@ -234,13 +265,19 @@ contractMail.verify((error) => {
   }
 })
 
-export const sendInvitation = (req, res, next) => {
-  const inviterMail=req.userMail;
-  const {guestMail,projectName}=req.body;  
-  if(!projectName){
+export const sendInvitation = async (req, res, next) => {
+  const inviterMail = req.userMail;
+  const { guestMail, projectName } = req.body;
+  const guestDetail = await databaseProject.user.findOne({ email: guestMail });
+  let guestId;
+  if (guestDetail) {
+    guestId = guestDetail._id;
+  }
+  const projectID = req.params.projectID;
+  if (!projectName) {
     return next('Missing parameter: projectName');
   }
-  const template = fs.readFileSync(path.resolve('mailTemplate/invitation.html'), "utf-8").replaceAll("{{projectName}}",projectName).replace("{{inviter}}",inviterMail);
+  const template = fs.readFileSync(path.resolve('mailTemplate/invitation.html'), "utf-8").replaceAll("{{projectName}}", projectName).replace("{{inviter}}", inviterMail).replace("{{projectID}}", projectID).replace("{{memberID}}", guestId);
   const sentMail = {
     from: "lightwing2208@gmail.com",
     to: guestMail,
@@ -248,7 +285,7 @@ export const sendInvitation = (req, res, next) => {
     html: template
   }
   contractMail.sendMail(sentMail, (error) => {
-    if (error) {      
+    if (error) {
       return next(error);
     }
     else {
