@@ -9,25 +9,25 @@ export class User {
 }
 export class Chat {
   constructor(chat) {
-    (this.userIDs = chat.userIDs || []),
+    (this.userIds = chat.userIds || []),
       (this.message = chat.message || []),
-      // message struct {userID:id,content:" "}
+      // message struct {userId:id,content:" "}
       (this.createdDate = new Date());
   }
 }
 export class Project {
   constructor(project) {
-    (this.leaderID = project.leaderID),
+    (this.leaderId = project.leaderId),
       (this.members = project.members || []),
       (this.createdDate = new Date()),
-      (this.taskIDs = project.taskIDs || []),
+      (this.taskIds = project.taskIds || []),
       (this.projectName = project.projectName),
       (this.code = project.code);
   }
 }
 export class Task {
   constructor(task) {
-    (this.projectID = task.projectID),
+    (this.projectId = task.projectId),
       (this.code = task.code),
       (this.title = task.title || ""),
       (this.registeredMembers = task.registeredMembers || []),

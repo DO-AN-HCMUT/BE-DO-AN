@@ -4,9 +4,9 @@ import databaseProject from "../mongodb.js";
 export const getMe = async (req, res, next) => {
   try {
     const result = await databaseProject.user.findOne({
-      _id: new ObjectId(req.userID),
+      _id: new ObjectId(req.userId),
     });
-    console.log(req.userID);
+    console.log(req.userId);
 
     return res.status(200).json({
       payload: result,
@@ -34,9 +34,9 @@ export const getDetail = async (req, res, next) => {
 };
 export const updateProfile = async (req, res, next) => {
   try {
-    const userID = req.userID;
+    const userId = req.userId;
     await databaseProject.user.updateOne(
-      { _id: new ObjectId(userID) },
+      { _id: new ObjectId(userId) },
       { $set: req.body },
     );
     return res.json({
@@ -50,14 +50,14 @@ export const updateProfile = async (req, res, next) => {
 };
 export const getAllProject = async (req, res, next) => {
   try {
-    const userID = req.userID;
+    const userId = req.userId;
     const paging = Number(req.query?.paging);
     const searching = req.query?.searching;
 
     const listOfProject = await databaseProject.project
-      .find({ $or: [{ leaderID: userID }, { members: userID }] })
+      .find({ $or: [{ leaderId: userId }, { members: userId }] })
       .toArray();
-    console.log("userID", userID);
+    console.log("userId", userId);
 
     let result = listOfProject;
     if (searching) {
@@ -93,12 +93,12 @@ export const getAllProject = async (req, res, next) => {
 };
 export const getAllFriend = async (req, res, next) => {
   try {
-    const userID = req.userID;
+    const userId = req.userId;
     const projectListOwner = await databaseProject.project
-      .find({ leaderID: userID })
+      .find({ leaderId: userId })
       .toArray();
     const projectListMember = await databaseProject.project
-      .find({ members: userID })
+      .find({ members: userId })
       .toArray();
     Promise.all([projectListMember, projectListOwner]);
     let friendList = [];
@@ -111,14 +111,14 @@ export const getAllFriend = async (req, res, next) => {
       }
     });
     projectListMember.forEach((item) => {
-      if (!friendList.includes(item.leaderID)) {
-        friendList.push(item.leaderID);
+      if (!friendList.includes(item.leaderId)) {
+        friendList.push(item.leaderId);
       }
     });
     if (friendList.length > 0) {
-      const friendIDs = friendList.map((item) => new ObjectId(item));
+      const friendIds = friendList.map((item) => new ObjectId(item));
       const friendData = await databaseProject.user
-        .find({ _id: { $in: friendIDs } })
+        .find({ _id: { $in: friendIds } })
         .toArray();
       const payload = friendData.map((item) => {
         return {

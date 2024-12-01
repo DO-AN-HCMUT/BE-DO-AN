@@ -72,7 +72,7 @@ export const createOAuthAccess = async (req, res, next) => {
 const getOauthGoogleToken = async (code) => {
   const body = {
     code,
-    client_id: process.env.NEXT_PUBLIC_CLIENT_ID,
+    client_id: process.env.NEXT_PUBLIC_CLIENT_Id,
     client_secret: process.env.NEXT_PUBLIC_CLIENT_SECRET,
     redirect_uri: process.env.NEXT_PUBLIC_REDIRECT_URL,
     grant_type: "authorization_code",
@@ -92,7 +92,7 @@ const getOauthGoogleToken = async (code) => {
 /**
  * Hàm này thực hiện gửi yêu cầu lấy thông tin người dùng từ Google dựa trên Google OAuth token.
  * @param {Object} tokens - Đối tượng chứa Google OAuth token.
- * @param {string} tokens.id_token - ID token được lấy từ Google OAuth.
+ * @param {string} tokens.id_token - Id token được lấy từ Google OAuth.
  * @param {string} tokens.access_token - Access token được lấy từ Google OAuth.
  * @returns {Object} - Đối tượng chứa thông tin người dùng từ Google.
  */

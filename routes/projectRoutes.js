@@ -15,12 +15,12 @@ import {
 
 export const projectRouter = express.Router();
 projectRouter.post("/new", userValidator, makeProject);
-projectRouter.get("/:projectID/members", getMembers);
-projectRouter.post("/:projectID/addMember",addMember);
-projectRouter.post("/:projectID/verify",userValidator,verifyMember);
-projectRouter.post("/:projectID/sendInvitation", userValidator,sendInvitation);
-projectRouter.put("/:projectID/deleteMember", deleteMember);
-projectRouter.post("/:projectID/createTask", createTask);
-projectRouter.get("/:projectID/get", userValidator, getProject);
-projectRouter.delete("/:projectID/deleteProject", userValidator, deleteProject);
-projectRouter.get("/:projectID/tasks", getAllTasks);
+projectRouter.get("/:projectId/members", getMembers);
+projectRouter.post("/:projectId/addMember",addMember);
+projectRouter.post("/:projectId/verify",userValidator,verifyMember);
+projectRouter.post("/:projectId/sendInvitation", userValidator,sendInvitation);
+projectRouter.put("/:projectId/deleteMember", deleteMember);
+projectRouter.post("/:projectId/createTask", createTask);
+projectRouter.get("/:projectId/get", userValidator, getProject);
+projectRouter.delete("/:projectId/deleteProject", userValidator, deleteProject);
+projectRouter.get("/:projectId/tasks", getAllTasks);

@@ -6,7 +6,7 @@ export const getChat = async (req, res, next) => {
   try {
     const secondId = req.params.id;
     const result = await databaseProject.chat.findOne({
-      userIDs: { $all: [req.userID, secondId] },
+      userIds: { $all: [req.userId, secondId] },
     });
     return res.json({
       payload: result,
@@ -21,7 +21,7 @@ export const getChat = async (req, res, next) => {
 export const makeChat = async (req, res, next) => {
   try {
     const checkExist = await databaseProject.chat.findOne({
-      userIDs: req.body.userIDs,
+      userIds: req.body.userIds,
     });
     if (checkExist) {
       return next("Exist Conservation");
@@ -42,7 +42,7 @@ export const deleteChat = async (req, res, next) => {
   try {
     const secondId = req.params.id;
     const result = await databaseProject.chat.findOne({
-      userIDs: { $all: [req.userID, secondId] },
+      userIds: { $all: [req.userId, secondId] },
     });
     await databaseProject.chat.deleteOne({ _id: new ObjectId(result._id) });
     return res.json({
@@ -57,19 +57,19 @@ export const deleteChat = async (req, res, next) => {
 };
 export const getReceiver = async (req, res, next) => {
   try {
-    const userID = req.userID;
+    const userId = req.userId;
 
     const data = await databaseProject.chat
-      .find({ userIDs: { $all: [userID] } })
+      .find({ userIds: { $all: [userId] } })
       .toArray();
     const result = data?.map((item) => {
-      if (item.userIDs[0] === userID) {
-        return item.userIDs[1];
+      if (item.userIds[0] === userId) {
+        return item.userIds[1];
       }
-      return item.userIDs[0];
+      return item.userIds[0];
     });
     return res.json({
-      payload: { sender: userID, receiver: result },
+      payload: { sender: userId, receiver: result },
       message: "success",
       success: true,
     });
@@ -81,10 +81,10 @@ export const addMessage = async (req, res, next) => {
   try {
     const { sender, receiver, message } = req.body;
     const oldData = await databaseProject.chat.findOne({
-      userIDs: { $all: [sender, receiver] },
+      userIds: { $all: [sender, receiver] },
     });
     await databaseProject.chat.updateOne(
-      { userIDs: { $all: [sender, receiver] } },
+      { userIds: { $all: [sender, receiver] } },
       { $set: { message: [...oldData.message, message] } },
     );
     return res.json({

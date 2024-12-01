@@ -6,7 +6,7 @@ import nodemailer from "nodemailer";
 import path from "path";
 
 export const makeProject = async (req, res, next) => {
-  const leaderID = req.userID;
+  const leaderId = req.userId;
   const { members, projectName } = req.body;
 
   const code = projectName
@@ -18,7 +18,7 @@ export const makeProject = async (req, res, next) => {
 
   const projectItem = new Project({
     members,
-    leaderID,
+    leaderId,
     projectName,
     code,
   });
@@ -34,12 +34,12 @@ export const makeProject = async (req, res, next) => {
   }
 };
 export const getProject = async (req, res, next) => {
-  const leaderID = req.userID;
-  const projectID = req.params.projectID;
+  const leaderId = req.userId;
+  const projectId = req.params.projectId;
   try {
-    if (projectID) {
+    if (projectId) {
       const result = await databaseProject.project.findOne({
-        _id: new ObjectId(projectID),
+        _id: new ObjectId(projectId),
       });
       return res.json({
         payload: result,
@@ -49,7 +49,7 @@ export const getProject = async (req, res, next) => {
     } else {
       const result = await databaseProject.project
         .find({
-          $or: [{ members: { $in: [leaderID] } }, { leaderID: leaderID }],
+          $or: [{ members: { $in: [leaderId] } }, { leaderId: leaderId }],
         })
         .toArray();
       return res.json({
@@ -63,23 +63,23 @@ export const getProject = async (req, res, next) => {
   }
 };
 export const addMember = async (req, res, next) => {
-  const projectID = req.params?.projectID;
-  const { memberIDs } = req.body;
+  const projectId = req.params?.projectId;
+  const { memberIds } = req.body;
   try {
     const project = await databaseProject.project.findOne({
-      _id: new ObjectId(projectID),
+      _id: new ObjectId(projectId),
     });
 
     if (!project) {
       return next("Project not found");
     }
 
-    const newMemberIds = memberIDs.filter(
+    const newMemberIds = memberIds.filter(
       (id) => !project.members.includes(id),
     );
 
     await databaseProject.project.updateOne(
-      { _id: new ObjectId(projectID) },
+      { _id: new ObjectId(projectId) },
       { $set: { members: [...project.members, ...newMemberIds] } },
     );
     return res.json({
@@ -92,11 +92,11 @@ export const addMember = async (req, res, next) => {
   }
 };
 export const verifyMember = async (req, res, next) => {
-  const projectID = req.params?.projectID;
-  const userID = req.userID;
+  const projectId = req.params?.projectId;
+  const userId = req.userId;
   try {
     const project = await databaseProject.project.findOne({
-      _id: new ObjectId(projectID),
+      _id: new ObjectId(projectId),
     });
 
     if (!project) {
@@ -104,12 +104,12 @@ export const verifyMember = async (req, res, next) => {
     }
 
     const newMemberIds = project.members.filter(
-      (id) => id === userID,
+      (id) => id === userId,
     );
     if (newMemberIds.length <= 0) {
       await databaseProject.project.updateOne(
-        { _id: new ObjectId(projectID) },
-        { $set: { members: [...project.members, userID] } },
+        { _id: new ObjectId(projectId) },
+        { $set: { members: [...project.members, userId] } },
       );
     }
 
@@ -123,17 +123,17 @@ export const verifyMember = async (req, res, next) => {
   }
 };
 export const deleteMember = async (req, res, next) => {
-  const projectID = req.params?.projectID;
-  const { memberIDS } = req.body;
+  const projectId = req.params?.projectId;
+  const { memberIds } = req.body;
   try {
-    const oldMemberIDs = await databaseProject.project.findOne({
-      _id: new ObjectId(projectID),
+    const oldMemberIds = await databaseProject.project.findOne({
+      _id: new ObjectId(projectId),
     })?.members;
-    const index = oldMemberIDs.indexOf(memberIDS);
-    oldMemberIDs.splice(index, 1);
+    const index = oldMemberIds.indexOf(memberIds);
+    oldMemberIds.splice(index, 1);
     await databaseProject.project.updateOne(
-      { _id: new ObjectId(projectID) },
-      { members: oldMemberIDs },
+      { _id: new ObjectId(projectId) },
+      { members: oldMemberIds },
     );
     return res.json({
       payload: {},
@@ -145,10 +145,10 @@ export const deleteMember = async (req, res, next) => {
   }
 };
 export const deleteProject = async (req, res, next) => {
-  const projectID = req.params?.projectID;
+  const projectId = req.params?.projectId;
   try {
-    await databaseProject.project.deleteOne({ _id: new ObjectId(projectID) });
-    await databaseProject.task.deleteMany({ projectID: projectID });
+    await databaseProject.project.deleteOne({ _id: new ObjectId(projectId) });
+    await databaseProject.task.deleteMany({ projectId: projectId });
     return res.json({
       payload: {},
       success: true,
@@ -160,22 +160,22 @@ export const deleteProject = async (req, res, next) => {
 };
 
 export const createTask = async (req, res, next) => {
-  const projectID = req.params?.projectID;
+  const projectId = req.params?.projectId;
   const taskDetail = req.body;
 
   const project = await databaseProject.project.findOne({
-    _id: new ObjectId(projectID),
+    _id: new ObjectId(projectId),
   });
 
-  const code = project.code + "-" + (project.taskIDs.length + 1);
+  const code = project.code + "-" + (project.taskIds.length + 1);
 
   try {
-    const taskItem = new Task({ ...taskDetail, projectID, code });
+    const taskItem = new Task({ ...taskDetail, projectId, code });
     const result = await databaseProject.task.insertOne(taskItem);
-    const insertID = result.insertedId;
+    const insertId = result.insertedId;
     await databaseProject.project.updateOne(
-      { _id: new ObjectId(projectID) },
-      { $push: { taskIDs: insertID } },
+      { _id: new ObjectId(projectId) },
+      { $push: { taskIds: insertId } },
     );
     return res.json({
       payload: {},
@@ -188,12 +188,12 @@ export const createTask = async (req, res, next) => {
 };
 
 export const getMembers = async (req, res, next) => {
-  const projectID = req.params.projectID;
+  const projectId = req.params.projectId;
   const search = req.query?.search;
 
   try {
     const project = await databaseProject.project.findOne({
-      _id: new ObjectId(projectID),
+      _id: new ObjectId(projectId),
     });
 
     if (!project) {
@@ -218,13 +218,13 @@ export const getMembers = async (req, res, next) => {
 };
 
 export const getAllTasks = async (req, res, next) => {
-  const { projectID } = req.params;
+  const { projectId } = req.params;
 
   try {
     const result = await Promise.all(
       (
         await databaseProject.task
-          .find({ projectID: { $in: [projectID] } })
+          .find({ projectId: { $in: [projectId] } })
           .toArray()
       ).map(async (item) => {
         const userIds = item.registeredMembers;
@@ -273,11 +273,11 @@ export const sendInvitation = async (req, res, next) => {
   if (guestDetail) {
     guestId = guestDetail._id;
   }
-  const projectID = req.params.projectID;
+  const projectId = req.params.projectId;
   if (!projectName) {
     return next('Missing parameter: projectName');
   }
-  const template = fs.readFileSync(path.resolve('mailTemplate/invitation.html'), "utf-8").replaceAll("{{projectName}}", projectName).replace("{{inviter}}", inviterMail).replace("{{projectID}}", projectID).replace("{{memberID}}", guestId);
+  const template = fs.readFileSync(path.resolve('mailTemplate/invitation.html'), "utf-8").replaceAll("{{projectName}}", projectName).replace("{{inviter}}", inviterMail).replace("{{projectId}}", projectId).replace("{{memberId}}", guestId);
   const sentMail = {
     from: "lightwing2208@gmail.com",
     to: guestMail,

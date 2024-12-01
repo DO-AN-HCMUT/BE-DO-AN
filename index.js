@@ -52,13 +52,13 @@ const socketService = (socket) => {
   for (let [id, socket] of io.of("/").sockets) {
     if (users.filter((item) => item.socketName == socket.username).length < 1 && socket.username !== undefined)
       users.push({
-        socketID: id,
+        socketId: id,
         socketName: socket.username,
       });
   }
   socket.emit("users", users);
   socket.on('message', (payload) => {
-    io.to(`${payload.socketID}`).emit('private', `${payload.content}`)
+    io.to(`${payload.socketId}`).emit('private', `${payload.content}`)
   })
 };
 io.on("connection", socketService);
