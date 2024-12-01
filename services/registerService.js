@@ -14,9 +14,8 @@ async function register(payload) {
     const encryptPass = bcrypt.hashSync(payload.password, hashCount);
     await databaseProject.user.insertOne(
       new User({
+        ...payload,
         password: encryptPass,
-        fullName: payload.email.split('@')[0],
-        email: payload.email,
       }),
     );
   }

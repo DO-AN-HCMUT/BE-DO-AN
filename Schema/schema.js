@@ -1,10 +1,10 @@
 export class User {
   constructor(user) {
-    (this.fullName = user.fullName || ""),
+    (this.fullName = user.fullName),
       (this.email = user.email),
       (this.password = user.password),
-      (this.birthday = user.birthday ? new Date(user.birthday) : new Date()),
-      (this.avatar = user.avatar || "https://avatar.iran.liara.run/public");
+      (this.birthday = user.birthday ? new Date(user.birthday) : null),
+      (this.avatar = user.avatar ?? null);
   }
 }
 export class Chat {

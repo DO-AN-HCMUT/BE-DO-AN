@@ -28,7 +28,7 @@ export const createTokenLogin = (data, privateKey) => {
     jwt.sign(
       { email: data.email, password: data.password },
       privateKey,
-      { expiresIn: "1h" },
+      { expiresIn: "365d" },
       (err, token) => {
         if (err) {
           reject(err.message);

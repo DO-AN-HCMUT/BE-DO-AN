@@ -7,17 +7,7 @@ export const validator = (schema) => {
     await schema.run(req);
     const error = validationResult(req).mapped();
     if (Object.values(error).length > 0) {
-      // next(error);
-      let msg = "";
-      if (error.email) {
-        msg = msg + error.email.msg;
-      }
-      if (Object.values(error).length == 2) {
-        msg += " and ";
-      }
-      if (error.password) {
-        msg += error.password.msg;
-      }
+      const msg = Object.values(error).map(error => error.msg).join(", ");
       return res.status(400).json({
         payload: {},
         message: msg,
@@ -69,6 +59,13 @@ export const validateRegister = validator(
           },
         },
       },
+
+      fullName: {
+        trim: true,
+        notEmpty: {
+          errorMessage: "Full name is required",
+        }
+      }
     },
     ["body"],
   ),
