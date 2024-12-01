@@ -12,7 +12,7 @@ import { taskRoutes } from "./routes/taskRoutes.js";
 import { userRoutes } from "./routes/userRoutes.js";
 import { projectRouter } from "./routes/projectRoutes.js";
 const app = express();
-const chatPort = 5500;
+const chatPort = 5555;
 config();
 app.use(helmet());
 app.use(express.json());
@@ -44,10 +44,10 @@ const socketService = (socket) => {
   // });
   const users = [];
   const username = socket.handshake.auth.username;
-  if (!username) {
-    console.log('socket error');
-    return;
-  }
+  // if (!username) {
+  //   console.log('socket error');
+  //   return;
+  // }
   socket.username = username;
   for (let [id, socket] of io.of("/").sockets) {
     if (users.filter((item) => item.socketName == socket.username).length < 1 && socket.username !== undefined)
@@ -60,5 +60,10 @@ const socketService = (socket) => {
   socket.on('message', (payload) => {
     io.to(`${payload.socketId}`).emit('private', `${payload.content}`)
   })
+  socket.on('disconnect', (reason) => {
+    socket.disconnect(true);
+    io.disconnectSockets(true);
+    console.log(`Client disconnected: ${socket.id}, Reason: ${reason}`);
+  });
 };
 io.on("connection", socketService);

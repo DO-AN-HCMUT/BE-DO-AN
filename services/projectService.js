@@ -111,7 +111,14 @@ export const addMember = async (req, res, next) => {
 
 export const verifyMember = async (req, res, next) => {
   const projectId = req.params?.projectId;
+  const memberId=req.query?.memberId;
   const userId = req.userId;
+  if( memberId === 'undefined'){
+    return next('Error');
+  }
+  else if(memberId !== userId){
+    return next('You are not invited');
+  }
   try {
     const project = await databaseProject.project.findOne({
       _id: new ObjectId(projectId),
