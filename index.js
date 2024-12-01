@@ -12,7 +12,7 @@ import { taskRoutes } from "./routes/taskRoutes.js";
 import { userRoutes } from "./routes/userRoutes.js";
 import { projectRouter } from "./routes/projectRoutes.js";
 const app = express();
-const chatPort = 5555;
+const chatPort = 5500;
 config();
 app.use(helmet());
 app.use(express.json());
