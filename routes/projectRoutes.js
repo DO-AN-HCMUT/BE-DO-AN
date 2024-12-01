@@ -11,10 +11,12 @@ import {
   getAllTasks,
   sendInvitation,
   verifyMember,
+  checkProjectKey,
 } from "../services/projectService.js";
 
 export const projectRouter = express.Router();
 projectRouter.post("/new", userValidator, makeProject);
+projectRouter.post('/key', checkProjectKey);
 projectRouter.get("/:projectId/members", getMembers);
 projectRouter.post("/:projectId/addMember",addMember);
 projectRouter.post("/:projectId/verify",userValidator,verifyMember);

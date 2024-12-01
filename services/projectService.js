@@ -7,25 +7,18 @@ import path from "path";
 
 export const makeProject = async (req, res, next) => {
   const leaderId = req.userId;
-  const { members, projectName } = req.body;
+  const { name, key } = req.body;
 
-  const code = projectName
-    .split(" ")
-    .slice(0, 3)
-    .map((word) => word[0])
-    .join("")
-    .toUpperCase();
-
-  const projectItem = new Project({
-    members,
+  const newProject = new Project({
     leaderId,
-    projectName,
-    code,
-  });
+    name,
+    key,
+  })
+
   try {
-    await databaseProject.project.insertOne(projectItem);
+    await databaseProject.project.insertOne(newProject);
     return res.json({
-      payload: {},
+      payload: newProject,
       success: true,
       message: "Create success",
     });
@@ -33,6 +26,29 @@ export const makeProject = async (req, res, next) => {
     return next(error);
   }
 };
+
+export const checkProjectKey = async (req, res, next) => {
+  const { key } = req.body;
+  try {
+    const project = await databaseProject.project.findOne({ key });
+    if (project) {
+      return res.status(400).json({
+        payload: {},
+        success: false,
+        message: "Project key is already exist",
+      });
+    } else {
+      return res.json({
+        payload: {},
+        success: true,
+        message: "Project key is valid",
+      });
+    }
+  } catch (error) {
+    return next(error);
+  }
+}
+
 export const getProject = async (req, res, next) => {
   const leaderId = req.userId;
   const projectId = req.params.projectId;
@@ -62,9 +78,10 @@ export const getProject = async (req, res, next) => {
     return next(error);
   }
 };
+
 export const addMember = async (req, res, next) => {
   const projectId = req.params?.projectId;
-  const { memberIds } = req.body;
+  const { memberEmails } = req.body;
   try {
     const project = await databaseProject.project.findOne({
       _id: new ObjectId(projectId),
@@ -91,6 +108,7 @@ export const addMember = async (req, res, next) => {
     return next(error);
   }
 };
+
 export const verifyMember = async (req, res, next) => {
   const projectId = req.params?.projectId;
   const userId = req.userId;
@@ -122,6 +140,7 @@ export const verifyMember = async (req, res, next) => {
     return next(error);
   }
 };
+
 export const deleteMember = async (req, res, next) => {
   const projectId = req.params?.projectId;
   const { memberIds } = req.body;
@@ -144,6 +163,7 @@ export const deleteMember = async (req, res, next) => {
     return next(error);
   }
 };
+
 export const deleteProject = async (req, res, next) => {
   const projectId = req.params?.projectId;
   try {
@@ -167,10 +187,10 @@ export const createTask = async (req, res, next) => {
     _id: new ObjectId(projectId),
   });
 
-  const code = project.code + "-" + (project.taskIds.length + 1);
+  const key = project.key + "-" + (project.taskIds.length + 1);
 
   try {
-    const taskItem = new Task({ ...taskDetail, projectId, code });
+    const taskItem = new Task({ ...taskDetail, projectId, key });
     const result = await databaseProject.task.insertOne(taskItem);
     const insertId = result.insertedId;
     await databaseProject.project.updateOne(

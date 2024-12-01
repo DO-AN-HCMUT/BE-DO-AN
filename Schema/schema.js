@@ -18,17 +18,17 @@ export class Chat {
 export class Project {
   constructor(project) {
     (this.leaderId = project.leaderId),
-      (this.members = project.members || []),
-      (this.createdDate = new Date()),
-      (this.taskIds = project.taskIds || []),
-      (this.projectName = project.projectName),
-      (this.code = project.code);
+      (this.members = project.members ?? []),
+      (this.createdAt = new Date()),
+      (this.taskIds = []),
+      (this.name = project.name),
+      (this.key = project.key);
   }
 }
 export class Task {
   constructor(task) {
     (this.projectId = task.projectId),
-      (this.code = task.code),
+      (this.key = task.key),
       (this.title = task.title || ""),
       (this.registeredMembers = task.registeredMembers || []),
       (this.description = task.description || ""),

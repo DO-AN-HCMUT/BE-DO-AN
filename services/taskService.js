@@ -28,7 +28,7 @@ export const getAllTask = async (req, res, next) => {
           'registeredMembers': [userId],
           $or: [
             { title: { $regex: search, $options: "i" } },
-            { code: { $regex: search, $options: "i" } }
+            { key: { $regex: search, $options: "i" } }
           ]
         }
       }, {
