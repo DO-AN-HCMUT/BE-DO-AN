@@ -224,7 +224,7 @@ export const getAllTasks = async (req, res, next) => {
     const result = await Promise.all(
       (
         await databaseProject.task
-          .find({ projectID: { $in: [projectID] } })
+          .find({ projectID: { $in: [new ObjectId(projectID)] } })
           .toArray()
       ).map(async (item) => {
         const userIds = item.registeredMembers;
@@ -246,7 +246,7 @@ export const getAllTasks = async (req, res, next) => {
     return next(error);
   }
 };
-// mail 
+// mail
 const contractMail = nodemailer.createTransport({
   service: "gmail",
   auth: {
