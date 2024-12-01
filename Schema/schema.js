@@ -18,7 +18,7 @@ export class Chat {
 export class Project {
   constructor(project) {
     (this.leaderId = project.leaderId),
-      (this.members = project.members ?? []),
+      (this.memberIds = project.memberIds ?? []),
       (this.createdAt = new Date()),
       (this.taskIds = []),
       (this.name = project.name),

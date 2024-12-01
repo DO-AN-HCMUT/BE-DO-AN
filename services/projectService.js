@@ -65,7 +65,7 @@ export const getProject = async (req, res, next) => {
     } else {
       const result = await databaseProject.project
         .find({
-          $or: [{ members: { $in: [leaderId] } }, { leaderId: leaderId }],
+          $or: [{ memberIds: { $in: [leaderId] } }, { leaderId: leaderId }],
         })
         .toArray();
       return res.json({
@@ -92,12 +92,12 @@ export const addMember = async (req, res, next) => {
     }
 
     const newMemberIds = memberIds.filter(
-      (id) => !project.members.includes(id),
+      (id) => !project.memberIds.includes(id),
     );
 
     await databaseProject.project.updateOne(
       { _id: new ObjectId(projectId) },
-      { $set: { members: [...project.members, ...newMemberIds] } },
+      { $set: { memberIds: [...project.memberIds, ...newMemberIds] } },
     );
     return res.json({
       payload: {},
@@ -128,13 +128,13 @@ export const verifyMember = async (req, res, next) => {
       return next("Project not found");
     }
 
-    const newMemberIds = project.members.filter(
+    const newMemberIds = project.memberIds.filter(
       (id) => id === userId,
     );
     if (newMemberIds.length <= 0) {
       await databaseProject.project.updateOne(
         { _id: new ObjectId(projectId) },
-        { $set: { members: [...project.members, userId] } },
+        { $set: { memberIds: [...project.memberIds, userId] } },
       );
     }
 
@@ -154,12 +154,12 @@ export const deleteMember = async (req, res, next) => {
   try {
     const oldMemberIds = await databaseProject.project.findOne({
       _id: new ObjectId(projectId),
-    })?.members;
+    })?.memberIds;
     const index = oldMemberIds.indexOf(memberIds);
     oldMemberIds.splice(index, 1);
     await databaseProject.project.updateOne(
       { _id: new ObjectId(projectId) },
-      { members: oldMemberIds },
+      { memberIds: oldMemberIds },
     );
     return res.json({
       payload: {},
@@ -229,7 +229,7 @@ export const getMembers = async (req, res, next) => {
 
     const populatedMembers = await databaseProject.user
       .find({
-        _id: { $in: project.members.map((id) => new ObjectId(id)) },
+        _id: { $in: project.memberIds.map((id) => new ObjectId(id)) },
         fullName: { $regex: search || "", $options: "i" },
       })
       .toArray();
