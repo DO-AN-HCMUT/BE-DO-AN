@@ -52,8 +52,10 @@ export const getDetailTask = async (req, res, next) => {
     const payload = await databaseProject.task.findOne({
       _id: new ObjectId(taskId),
     });
+    const getUser=await databaseProject.user.find({_id:{$in:payload.registeredMembers}}).toArray();
+
     return res.json({
-      payload: payload,
+      payload: {...payload,memberDetail:getUser},
       success: true,
       message: "Success",
     });
