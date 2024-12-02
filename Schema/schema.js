@@ -32,7 +32,7 @@ export class Task {
       (this.title = task.title || ""),
       (this.registeredMembers = task.registeredMembers || []),
       (this.description = task.description || ""),
-      (this.status = task.status || "pending"),
+      (this.status = task.status || "TO_DO"),
       (this.endDate = task.endDate),
       (this.createdDate = new Date());
   }
