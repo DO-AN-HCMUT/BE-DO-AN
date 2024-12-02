@@ -55,7 +55,7 @@ export const getAllProject = async (req, res, next) => {
     const searching = req.query?.searching;
 
     const listOfProject = await databaseProject.project
-      .find({ $or: [{ leaderId: userId }, { memberIds: userId }] })
+      .find({ $or: [{ leaderId: new ObjectId(userId) }, { memberIds: new ObjectId(userId) }] })
       .toArray();
     console.log("userId", userId);
 
@@ -95,7 +95,7 @@ export const getAllFriend = async (req, res, next) => {
   try {
     const userId = req.userId;
     const projectListOwner = await databaseProject.project
-      .find({ leaderId: userId })
+      .find({ leaderId: new ObjectId(userId) })
       .toArray();
     const projectListMember = await databaseProject.project
       .find({ memberIds: userId })

@@ -23,17 +23,18 @@ export class Project {
       (this.taskIds = []),
       (this.name = project.name),
       (this.key = project.key);
+      (this.taskMaxIndex = 0)
   }
 }
 export class Task {
   constructor(task) {
     (this.projectId = task.projectId),
       (this.key = task.key),
-      (this.title = task.title || ""),
-      (this.registeredMembers = task.registeredMembers || []),
-      (this.description = task.description || ""),
-      (this.status = task.status || "TO_DO"),
-      (this.endDate = task.endDate),
-      (this.createdDate = new Date());
+      (this.title = task.title),
+      (this.registeredMembers = task.registeredMembers ?? []),
+      (this.description = task.description ?? null),
+      (this.status = task.status ?? "TO_DO"),
+      (this.endDate = task.endDate ?? null),
+      (this.createdAt = new Date());
   }
 }

@@ -10,9 +10,10 @@ export const makeProject = async (req, res, next) => {
   const { name, key } = req.body;
 
   const newProject = new Project({
-    leaderId,
+    leaderId: new ObjectId(leaderId),
     name,
     key,
+    memberIds: [new ObjectId(leaderId)],
   })
 
   try {
@@ -65,7 +66,7 @@ export const getProject = async (req, res, next) => {
     } else {
       const result = await databaseProject.project
         .find({
-          $or: [{ memberIds: { $in: [leaderId] } }, { leaderId: leaderId }],
+          $or: [{ memberIds: { $in: [new ObjectId(leaderId)] } }, { leaderId: new ObjectId(leaderId) }],
         })
         .toArray();
       return res.json({
@@ -194,7 +195,7 @@ export const createTask = async (req, res, next) => {
     _id: new ObjectId(projectId),
   });
 
-  const key = project.key + "-" + (project.taskIds.length + 1);
+  const key = project.key + "-" + (project.taskMaxIndex + 1);
 
   try {
     const taskItem = new Task({ ...taskDetail, projectId, key });
@@ -202,7 +203,7 @@ export const createTask = async (req, res, next) => {
     const insertId = result.insertedId;
     await databaseProject.project.updateOne(
       { _id: new ObjectId(projectId) },
-      { $push: { taskIds: insertId } },
+      { $set: {taskMaxIndex: project.taskMaxIndex + 1} },
     );
     return res.json({
       payload: {},
