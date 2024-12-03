@@ -52,17 +52,16 @@ export const getAllProject = async (req, res, next) => {
   try {
     const userId = req.userId;
     const paging = Number(req.query?.paging);
-    const searching = req.query?.searching;
+    const search = req.query?.search;
 
     const listOfProject = await databaseProject.project
-      .find({ $or: [{ leaderId: new ObjectId(userId) }, { memberIds: new ObjectId(userId) }] })
+      .find({ memberIds: {$in: [new ObjectId(userId)]} })
       .toArray();
-    console.log("userId", userId);
 
     let result = listOfProject;
-    if (searching) {
+    if (search) {
       result = listOfProject.filter((item, index) => {
-        if (item.projectName.includes(decodeURI(searching))) {
+        if (item.projectName.includes(search)) {
           return true;
         }
         return false;

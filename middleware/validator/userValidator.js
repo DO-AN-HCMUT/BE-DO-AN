@@ -28,12 +28,12 @@ export const checkToken = (privateKey, token) => {
 };
 export const userValidator = async (req, res, next) => {
   const token = req.headers?.authorization?.split(" ")[1];
-  if (token == "undefined") {
-    return {
+  if (!token) {
+    return res.status(400).json({
       payload: {},
       message: "Access token is undefined",
       success: false,
-    };
+    });
   } else {
     const userUnit = checkToken(privateKey, token);
     if (userUnit.success) {
@@ -55,7 +55,7 @@ export const userValidator = async (req, res, next) => {
     } else {
       return res.status(400).json({
         payload: {},
-        message: userUnit.message.name,
+        message: userUnit.message,
         success: false,
       });
     }
