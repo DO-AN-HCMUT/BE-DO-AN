@@ -198,7 +198,7 @@ export const createTask = async (req, res, next) => {
   const key = project.key + "-" + (project.taskMaxIndex + 1);
 
   try {
-    const taskItem = new Task({ ...taskDetail, projectId, key });
+    const taskItem = new Task({ ...taskDetail, new ObjectId(projectId), key });
     const result = await databaseProject.task.insertOne(taskItem);
     const insertId = result.insertedId;
     await databaseProject.project.updateOne(
