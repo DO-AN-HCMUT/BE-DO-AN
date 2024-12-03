@@ -5,17 +5,10 @@ export const getAllTask = async (req, res, next) => {
   const userId = req.userId;
 
   const search = req.query?.search;
+  const dueToday = req.query?.dueToday === 'true';
 
   try {
     const payload = await databaseProject.task.aggregate([
-      {
-        '$lookup': {
-          'from': 'project',
-          'localField': 'projectId',
-          'foreignField': '_id',
-          'as': 'result'
-        }
-      },
       {
         '$match':{
           registeredMembers: {
@@ -26,8 +19,25 @@ export const getAllTask = async (req, res, next) => {
               title: { $regex: search ?? '' , $options: "i" }
             },
             { key: { $regex: search ?? '' , $options: "i" } }
-          ]
+          ],
+          ...(dueToday ? {
+            endDate: {
+              $gte: new Date(new Date().setHours(0, 0, 0, 0)),
+              $lt: new Date(new Date().setHours(23, 59, 59, 999))
+            }
+          } : {})
         }
+      },
+      {
+        $lookup: {
+          from: "project",
+          localField: "projectId",
+          foreignField: "_id",
+          as: "project"
+        }
+      },
+      {
+        $unwind: "$project"
       },
       {
         '$sort': {
