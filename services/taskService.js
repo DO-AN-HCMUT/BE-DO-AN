@@ -65,11 +65,11 @@ export const getDetailTask = async (req, res, next) => {
 };
 export const updateTask = async (req, res, next) => {
   const taskId = req.params.id;
-  const contentUpdate = req.body;
+  const contentUpdate = req.body.payload;
   try {
     await databaseProject.task.updateOne(
       { _id: new ObjectId(taskId) },
-      { $set: contentUpdate },
+      { $set: {...contentUpdate,registeredMembers:contentUpdate.registeredMembers.map((item)=> new ObjectId(item)),endDate:new Date(contentUpdate.endDate)} },
     );
     return res.json({
       payload: {},
