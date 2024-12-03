@@ -4,41 +4,40 @@ import databaseProject from "../mongodb.js";
 export const getAllTask = async (req, res, next) => {
   const userId = req.userId;
 
-  const search = decodeURI(req.query?.search);
+  const search = req.query?.search;
+
   try {
-    // const payload = await databaseProject.task
-    //   .find({ registeredMembers: { $in: [userId] },title: { $regex: search || "", $options: "i" } })
-    //   .toArray();
     const payload = await databaseProject.task.aggregate([
       {
-        '$addFields': {
-          'lookupField': {
-            '$toObjectId': '$projectId'
-          }
-        }
-      }, {
         '$lookup': {
           'from': 'project',
-          'localField': 'lookupField',
+          'localField': 'projectId',
           'foreignField': '_id',
           'as': 'result'
         }
-      }, {
-        '$match': {
-          'registeredMembers': [userId],
+      },
+      {
+        '$match':{
+          registeredMembers: {
+            $in: [new ObjectId(userId)]
+          },
           $or: [
-            { title: { $regex: search, $options: "i" } },
-            { key: { $regex: search, $options: "i" } }
+            {
+              title: { $regex: search ?? '' , $options: "i" }
+            },
+            { key: { $regex: search ?? '' , $options: "i" } }
           ]
         }
-      }, {
+      },
+      {
         '$sort': {
           'endDate': -1
         }
       }
-    ]).toArray()
+    ]).toArray();
+
     return res.json({
-      payload: payload,
+      payload,
       success: true,
       message: "Success",
     });
