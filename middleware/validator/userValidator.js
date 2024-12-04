@@ -1,16 +1,16 @@
-import jwt from "jsonwebtoken";
-import databaseProject from "../../mongodb.js";
+import jwt from 'jsonwebtoken';
+import databaseProject from '../../mongodb.js';
 const privateKey = process.env.PRIVATE_KEY;
 export const checkToken = (privateKey, token) => {
   try {
     if (token !== undefined) {
       return {
         payload: jwt.verify(token, privateKey),
-        message: "Success",
+        message: 'Success',
         success: true,
       };
     } else {
-      const error = "error checkToken";
+      const error = 'error checkToken';
 
       return {
         payload: {},
@@ -27,13 +27,13 @@ export const checkToken = (privateKey, token) => {
   }
 };
 export const userValidator = async (req, res, next) => {
-  const token = req.headers?.authorization?.split(" ")[1];
-  if (token == "undefined") {
-    return {
+  const token = req.headers?.authorization?.split(' ')[1];
+  if (!token) {
+    return res.status(400).json({
       payload: {},
-      message: "Access token is undefined",
+      message: 'Access token is undefined',
       success: false,
-    };
+    });
   } else {
     const userUnit = checkToken(privateKey, token);
     if (userUnit.success) {
@@ -48,14 +48,14 @@ export const userValidator = async (req, res, next) => {
       } else {
         return res.status(400).json({
           payload: {},
-          message: "Access token is wrong",
+          message: 'Access token is wrong',
           success: false,
         });
       }
     } else {
       return res.status(400).json({
         payload: {},
-        message: userUnit.message.name,
+        message: userUnit.message,
         success: false,
       });
     }

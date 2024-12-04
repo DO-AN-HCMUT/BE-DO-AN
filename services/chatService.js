@@ -1,6 +1,6 @@
-import { ObjectId } from "mongodb";
-import databaseProject from "../mongodb.js";
-import { Chat } from "../Schema/schema.js";
+import { ObjectId } from 'mongodb';
+import databaseProject from '../mongodb.js';
+import { Chat } from '../Schema/schema.js';
 
 export const getChat = async (req, res, next) => {
   try {
@@ -10,7 +10,7 @@ export const getChat = async (req, res, next) => {
     });
     return res.json({
       payload: result,
-      message: "success",
+      message: 'success',
       success: true,
     });
   } catch (error) {
@@ -24,13 +24,13 @@ export const makeChat = async (req, res, next) => {
       userIds: req.body.userIds,
     });
     if (checkExist) {
-      return next("Exist Conservation");
+      return next('Exist Conservation');
     } else {
       const item = new Chat(req.body);
       await databaseProject.chat.insertOne(item);
       return res.json({
         payload: {},
-        message: "success",
+        message: 'success',
         success: true,
       });
     }
@@ -47,10 +47,9 @@ export const deleteChat = async (req, res, next) => {
     await databaseProject.chat.deleteOne({ _id: new ObjectId(result._id) });
     return res.json({
       payload: {},
-      message: "success",
+      message: 'success',
       success: true,
     });
-
   } catch (error) {
     return next(error);
   }
@@ -59,9 +58,7 @@ export const getReceiver = async (req, res, next) => {
   try {
     const userId = req.userId;
 
-    const data = await databaseProject.chat
-      .find({ userIds: { $all: [userId] } })
-      .toArray();
+    const data = await databaseProject.chat.find({ userIds: { $all: [userId] } }).toArray();
     const result = data?.map((item) => {
       if (item.userIds[0] === userId) {
         return item.userIds[1];
@@ -70,7 +67,7 @@ export const getReceiver = async (req, res, next) => {
     });
     return res.json({
       payload: { sender: userId, receiver: result },
-      message: "success",
+      message: 'success',
       success: true,
     });
   } catch (error) {
@@ -89,7 +86,7 @@ export const addMessage = async (req, res, next) => {
     );
     return res.json({
       payload: {},
-      message: "success",
+      message: 'success',
       success: true,
     });
   } catch (error) {
