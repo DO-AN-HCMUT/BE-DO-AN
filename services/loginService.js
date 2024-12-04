@@ -1,10 +1,10 @@
-import axios from "axios";
-import bcrypt from "bcrypt";
+import axios from 'axios';
+import bcrypt from 'bcrypt';
 
-import jwt from "jsonwebtoken";
-import { checkToken } from "../middleware/validator/userValidator.js";
-import databaseProject from "../mongodb.js";
-import { User } from "../Schema/schema.js";
+import jwt from 'jsonwebtoken';
+import { checkToken } from '../middleware/validator/userValidator.js';
+import databaseProject from '../mongodb.js';
+import { User } from '../Schema/schema.js';
 const privateKey = process.env.PRIVATE_KEY;
 const hashCount = parseInt(process.env.HASH_COUNT);
 const FEUrl = process.env.FE_URL;
@@ -25,17 +25,12 @@ async function checkAccount(payload) {
 }
 export const createTokenLogin = (data, privateKey) => {
   return new Promise((resolve, reject) => {
-    jwt.sign(
-      { email: data.email, password: data.password },
-      privateKey,
-      { expiresIn: "365d" },
-      (err, token) => {
-        if (err) {
-          reject(err.message);
-        }
-        resolve(token);
-      },
-    );
+    jwt.sign({ email: data.email, password: data.password }, privateKey, { expiresIn: '365d' }, (err, token) => {
+      if (err) {
+        reject(err.message);
+      }
+      resolve(token);
+    });
   });
 };
 export const createLoginAccess = async (req, res, next) => {
@@ -45,7 +40,7 @@ export const createLoginAccess = async (req, res, next) => {
     const token = await createTokenLogin(encrypt, privateKey);
 
     return res.json({
-      message: "Success",
+      message: 'Success',
       payload: { accessToken: token },
       success: true,
     });
@@ -61,7 +56,7 @@ export const createOAuthAccess = async (req, res, next) => {
     const { id_token, access_token } = data;
     const googleUser = await getGoogleUser({ id_token, access_token });
     const email = googleUser.email;
-    const encrypt = { email: email, password: "Google" };
+    const encrypt = { email: email, password: 'Google' };
     await checkAccount(encrypt);
     const token = await createTokenLogin(encrypt, privateKey);
     return res.redirect(`${FEUrl}/auth/sign-in?accessToken=${token}`);
@@ -75,17 +70,13 @@ const getOauthGoogleToken = async (code) => {
     client_id: process.env.NEXT_PUBLIC_CLIENT_Id,
     client_secret: process.env.NEXT_PUBLIC_CLIENT_SECRET,
     redirect_uri: process.env.NEXT_PUBLIC_REDIRECT_URL,
-    grant_type: "authorization_code",
+    grant_type: 'authorization_code',
   };
-  const { data } = await axios.post(
-    "https://oauth2.googleapis.com/token",
-    body,
-    {
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
+  const { data } = await axios.post('https://oauth2.googleapis.com/token', body, {
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
     },
-  );
+  });
   return data;
 };
 
@@ -97,26 +88,23 @@ const getOauthGoogleToken = async (code) => {
  * @returns {Object} - Đối tượng chứa thông tin người dùng từ Google.
  */
 const getGoogleUser = async ({ id_token, access_token }) => {
-  const { data } = await axios.get(
-    "https://www.googleapis.com/oauth2/v1/userinfo",
-    {
-      params: {
-        access_token,
-        alt: "json",
-      },
-      headers: {
-        Authorization: `Bearer ${id_token}`,
-      },
+  const { data } = await axios.get('https://www.googleapis.com/oauth2/v1/userinfo', {
+    params: {
+      access_token,
+      alt: 'json',
     },
-  );
+    headers: {
+      Authorization: `Bearer ${id_token}`,
+    },
+  });
   return data;
 };
 export const checkTokenProcess = async (req, res, next) => {
-  const token = req.headers?.authorization?.split(" ")[1];
-  if (token == "undefined") {
+  const token = req.headers?.authorization?.split(' ')[1];
+  if (token == 'undefined') {
     return res.json({
       payload: {},
-      message: "Access token is undefined",
+      message: 'Access token is undefined',
       success: false,
     });
   } else {
@@ -124,7 +112,7 @@ export const checkTokenProcess = async (req, res, next) => {
     if (userUnit.success) {
       return res.status(200).json({
         payload: {},
-        message: "Success",
+        message: 'Success',
         success: true,
       });
     } else {

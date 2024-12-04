@@ -23,7 +23,7 @@ export class Project {
       (this.taskIds = []),
       (this.name = project.name),
       (this.key = project.key);
-      (this.taskMaxIndex = 0)
+    this.taskMaxIndex = 0;
   }
 }
 export class Task {
@@ -33,7 +33,7 @@ export class Task {
       (this.title = task.title),
       (this.registeredMembers = task.registeredMembers ?? []),
       (this.description = task.description ?? null),
-      (this.status = task.status ?? "TO_DO"),
+      (this.status = task.status ?? 'TO_DO'),
       (this.endDate = task.endDate ?? null),
       (this.createdAt = new Date());
   }

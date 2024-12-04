@@ -1,9 +1,9 @@
-import { ObjectId } from "mongodb";
-import databaseProject from "../mongodb.js";
-import { Project, Task } from "../Schema/schema.js";
-import fs from "fs";
-import nodemailer from "nodemailer";
-import path from "path";
+import { ObjectId } from 'mongodb';
+import databaseProject from '../mongodb.js';
+import { Project, Task } from '../Schema/schema.js';
+import fs from 'fs';
+import nodemailer from 'nodemailer';
+import path from 'path';
 
 export const makeProject = async (req, res, next) => {
   const leaderId = req.userId;
@@ -14,14 +14,14 @@ export const makeProject = async (req, res, next) => {
     name,
     key,
     memberIds: [new ObjectId(leaderId)],
-  })
+  });
 
   try {
     await databaseProject.project.insertOne(newProject);
     return res.json({
       payload: newProject,
       success: true,
-      message: "Create success",
+      message: 'Create success',
     });
   } catch (error) {
     return next(error);
@@ -36,19 +36,19 @@ export const checkProjectKey = async (req, res, next) => {
       return res.status(400).json({
         payload: {},
         success: false,
-        message: "Project key is already exist",
+        message: 'Project key is already exist',
       });
     } else {
       return res.json({
         payload: {},
         success: true,
-        message: "Project key is valid",
+        message: 'Project key is valid',
       });
     }
   } catch (error) {
     return next(error);
   }
-}
+};
 
 export const getProject = async (req, res, next) => {
   const leaderId = req.userId;
@@ -61,7 +61,7 @@ export const getProject = async (req, res, next) => {
       return res.json({
         payload: result,
         success: true,
-        message: "Success",
+        message: 'Success',
       });
     } else {
       const result = await databaseProject.project
@@ -72,7 +72,7 @@ export const getProject = async (req, res, next) => {
       return res.json({
         payload: result,
         success: true,
-        message: "Success",
+        message: 'Success',
       });
     }
   } catch (error) {
@@ -89,12 +89,10 @@ export const addMember = async (req, res, next) => {
     });
 
     if (!project) {
-      return next("Project not found");
+      return next('Project not found');
     }
 
-    const newMemberIds = memberIds.filter(
-      (id) => !project.memberIds.includes(id),
-    );
+    const newMemberIds = memberIds.filter((id) => !project.memberIds.includes(id));
 
     await databaseProject.project.updateOne(
       { _id: new ObjectId(projectId) },
@@ -103,7 +101,7 @@ export const addMember = async (req, res, next) => {
     return res.json({
       payload: {},
       success: true,
-      message: "Success",
+      message: 'Success',
     });
   } catch (error) {
     return next(error);
@@ -112,12 +110,11 @@ export const addMember = async (req, res, next) => {
 
 export const verifyMember = async (req, res, next) => {
   const projectId = req.params?.projectId;
-  const memberId=req.query?.memberId;
+  const memberId = req.query?.memberId;
   const userId = req.userId;
-  if( memberId === 'undefined'){
+  if (memberId === 'undefined') {
     return next('Error');
-  }
-  else if(memberId !== userId){
+  } else if (memberId !== userId) {
     return next('You are not invited');
   }
   try {
@@ -126,12 +123,10 @@ export const verifyMember = async (req, res, next) => {
     });
 
     if (!project) {
-      return next("Project not found");
+      return next('Project not found');
     }
 
-    const newMemberIds = project.memberIds.filter(
-      (id) => id === userId,
-    );
+    const newMemberIds = project.memberIds.filter((id) => id === userId);
     if (newMemberIds.length <= 0) {
       await databaseProject.project.updateOne(
         { _id: new ObjectId(projectId) },
@@ -142,7 +137,7 @@ export const verifyMember = async (req, res, next) => {
     return res.json({
       payload: {},
       success: true,
-      message: "Success",
+      message: 'Success',
     });
   } catch (error) {
     return next(error);
@@ -158,14 +153,11 @@ export const deleteMember = async (req, res, next) => {
     })?.memberIds;
     const index = oldMemberIds.indexOf(memberIds);
     oldMemberIds.splice(index, 1);
-    await databaseProject.project.updateOne(
-      { _id: new ObjectId(projectId) },
-      { memberIds: oldMemberIds },
-    );
+    await databaseProject.project.updateOne({ _id: new ObjectId(projectId) }, { memberIds: oldMemberIds });
     return res.json({
       payload: {},
       success: true,
-      message: "Success",
+      message: 'Success',
     });
   } catch (error) {
     return next(error);
@@ -180,7 +172,7 @@ export const deleteProject = async (req, res, next) => {
     return res.json({
       payload: {},
       success: true,
-      message: "Success",
+      message: 'Success',
     });
   } catch (error) {
     return next(error);
@@ -195,7 +187,7 @@ export const createTask = async (req, res, next) => {
     _id: new ObjectId(projectId),
   });
 
-  const key = project.key + "-" + (project.taskMaxIndex + 1);
+  const key = project.key + '-' + (project.taskMaxIndex + 1);
 
   try {
     const taskItem = new Task({ ...taskDetail, projectId: new ObjectId(projectId), key });
@@ -203,12 +195,12 @@ export const createTask = async (req, res, next) => {
     const insertId = result.insertedId;
     await databaseProject.project.updateOne(
       { _id: new ObjectId(projectId) },
-      { $set: {taskMaxIndex: project.taskMaxIndex + 1} },
+      { $set: { taskMaxIndex: project.taskMaxIndex + 1 } },
     );
     return res.json({
       payload: {},
       success: true,
-      message: "Success",
+      message: 'Success',
     });
   } catch (error) {
     return next(error);
@@ -225,20 +217,53 @@ export const getMembers = async (req, res, next) => {
     });
 
     if (!project) {
-      return next("Project not found");
+      return next('Project not found');
     }
 
-    const populatedMembers = await databaseProject.user
-      .find({
-        _id: { $in: project.memberIds.map((id) => new ObjectId(id)) },
-        fullName: { $regex: search || "", $options: "i" },
-      })
+    const members = await databaseProject.user
+      .aggregate([
+        {
+          $match: {
+            _id: { $in: project.memberIds.map((id) => new ObjectId(id)) },
+            fullName: { $regex: search || '', $options: 'i' },
+          },
+        },
+        {
+          // Lookup to join the projects collection
+          $lookup: {
+            from: 'project', // Name of the collection to join with
+            localField: '_id', // The field in the members collection
+            foreignField: 'leaderId', // The field in the projects collection
+            as: 'leaderProjects', // The output array
+          },
+        },
+        {
+          // Add a field to check if the member is a leader
+          $addFields: {
+            isLeader: {
+              $cond: {
+                if: {
+                  $gt: [{ $size: '$leaderProjects' }, 0],
+                },
+                then: true,
+                else: false,
+              },
+            },
+          },
+        },
+        {
+          // Optionally exclude the `leaderProjects` array from the output
+          $project: {
+            leaderProjects: 0,
+          },
+        },
+      ])
       .toArray();
 
     return res.json({
-      payload: populatedMembers,
+      payload: members,
       success: true,
-      message: "Success",
+      message: 'Success',
     });
   } catch (error) {
     return next(error);
@@ -250,25 +275,23 @@ export const getAllTasks = async (req, res, next) => {
 
   try {
     const result = await Promise.all(
-      (
-        await databaseProject.task
-          .find({ projectId: { $in: [projectId] } })
-          .toArray()
-      ).map(async (item) => {
-        const userIds = item.registeredMembers;
-        const users = await databaseProject.user
-          .find({
-            _id: { $in: userIds.map((id) => new ObjectId(id)) },
-          })
-          .toArray();
+      (await databaseProject.task.find({ projectId: { $in: [new ObjectId(projectId)] } }).toArray()).map(
+        async (item) => {
+          const userIds = item.registeredMembers;
+          const users = await databaseProject.user
+            .find({
+              _id: { $in: userIds.map((id) => new ObjectId(id)) },
+            })
+            .toArray();
 
-        return { ...item, registeredMembers: users };
-      }),
+          return { ...item, registeredMembers: users };
+        },
+      ),
     );
     return res.json({
       payload: result,
       success: true,
-      message: "Success",
+      message: 'Success',
     });
   } catch (error) {
     return next(error);
@@ -276,9 +299,9 @@ export const getAllTasks = async (req, res, next) => {
 };
 // mail
 const contractMail = nodemailer.createTransport({
-  service: "gmail",
+  service: 'gmail',
   auth: {
-    user: "lightwing2208@gmail.com",
+    user: 'lightwing2208@gmail.com',
     pass: process.env.PASS_MAIL,
   },
 });
@@ -286,12 +309,10 @@ contractMail.verify((error) => {
   if (error) {
     console.log(error);
     // return next(error)
+  } else {
+    console.log('ready to send');
   }
-  else {
-    console.log("ready to send");
-
-  }
-})
+});
 
 export const sendInvitation = async (req, res, next) => {
   const inviterMail = req.userMail;
@@ -305,23 +326,27 @@ export const sendInvitation = async (req, res, next) => {
   if (!projectName) {
     return next('Missing parameter: projectName');
   }
-  const template = fs.readFileSync(path.resolve('mailTemplate/invitation.html'), "utf-8").replaceAll("{{projectName}}", projectName).replace("{{inviter}}", inviterMail).replace("{{projectId}}", projectId).replace("{{memberId}}", guestId);
+  const template = fs
+    .readFileSync(path.resolve('mailTemplate/invitation.html'), 'utf-8')
+    .replaceAll('{{projectName}}', projectName)
+    .replace('{{inviter}}', inviterMail)
+    .replace('{{projectId}}', projectId)
+    .replace('{{memberId}}', guestId);
   const sentMail = {
-    from: "lightwing2208@gmail.com",
+    from: 'lightwing2208@gmail.com',
     to: guestMail,
-    subject: "INVITATION",
-    html: template
-  }
+    subject: 'INVITATION',
+    html: template,
+  };
   contractMail.sendMail(sentMail, (error) => {
     if (error) {
       return next(error);
-    }
-    else {
+    } else {
       return res.json({
         payload: {},
         success: true,
-        message: "Success",
+        message: 'Success',
       });
     }
-  })
-}
+  });
+};

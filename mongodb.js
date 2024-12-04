@@ -1,5 +1,5 @@
-import { MongoClient } from "mongodb";
-import { config } from "dotenv";
+import { MongoClient } from 'mongodb';
+import { config } from 'dotenv';
 
 config();
 // MongoDB connection URL
@@ -15,20 +15,20 @@ class DatabaseService {
     try {
       this.client.connect();
     } catch (error) {
-      console.log("error", error);
+      console.log('error', error);
     }
   }
   get user() {
-    return this.db.collection("user");
+    return this.db.collection('user');
   }
   get task() {
-    return this.db.collection("task");
+    return this.db.collection('task');
   }
   get chat() {
-    return this.db.collection("chat");
+    return this.db.collection('chat');
   }
   get project() {
-    return this.db.collection("project");
+    return this.db.collection('project');
   }
 }
 const databaseProject = new DatabaseService();

@@ -1,8 +1,8 @@
-import bcrypt from "bcrypt";
+import bcrypt from 'bcrypt';
 
-import { User } from "../Schema/schema.js";
-import databaseProject from "../mongodb.js";
-import { createTokenLogin } from "./loginService.js";
+import { User } from '../Schema/schema.js';
+import databaseProject from '../mongodb.js';
+import { createTokenLogin } from './loginService.js';
 const privateKey = process.env.PRIVATE_KEY;
 const hashCount = parseInt(process.env.HASH_COUNT);
 
@@ -29,7 +29,7 @@ export const createRegisterAccess = async (req, res, next) => {
     const accessToken = await createTokenLogin(encrypt, privateKey);
 
     return res.status(200).json({
-      message: "Success",
+      message: 'Success',
       payload: { accessToken },
       success: true,
     });

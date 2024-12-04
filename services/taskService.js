@@ -1,5 +1,5 @@
-import { ObjectId } from "mongodb";
-import databaseProject from "../mongodb.js";
+import { ObjectId } from 'mongodb';
+import databaseProject from '../mongodb.js';
 
 export const getAllTask = async (req, res, next) => {
   const userId = req.userId;
@@ -8,48 +8,52 @@ export const getAllTask = async (req, res, next) => {
   const dueToday = req.query?.dueToday === 'true';
 
   try {
-    const payload = await databaseProject.task.aggregate([
-      {
-        '$match':{
-          registeredMembers: {
-            $in: [new ObjectId(userId)]
-          },
-          $or: [
-            {
-              title: { $regex: search ?? '' , $options: "i" }
+    const payload = await databaseProject.task
+      .aggregate([
+        {
+          $match: {
+            registeredMembers: {
+              $in: [new ObjectId(userId)],
             },
-            { key: { $regex: search ?? '' , $options: "i" } }
-          ],
-          ...(dueToday ? {
-            endDate: {
-              $gte: new Date(new Date().setHours(0, 0, 0, 0)),
-              $lt: new Date(new Date().setHours(23, 59, 59, 999))
-            }
-          } : {})
-        }
-      },
-      {
-        $lookup: {
-          from: "project",
-          localField: "projectId",
-          foreignField: "_id",
-          as: "project"
-        }
-      },
-      {
-        $unwind: "$project"
-      },
-      {
-        '$sort': {
-          'endDate': -1
-        }
-      }
-    ]).toArray();
+            $or: [
+              {
+                title: { $regex: search ?? '', $options: 'i' },
+              },
+              { key: { $regex: search ?? '', $options: 'i' } },
+            ],
+            ...(dueToday
+              ? {
+                  endDate: {
+                    $gte: new Date(new Date().setHours(0, 0, 0, 0)),
+                    $lt: new Date(new Date().setHours(23, 59, 59, 999)),
+                  },
+                }
+              : {}),
+          },
+        },
+        {
+          $lookup: {
+            from: 'project',
+            localField: 'projectId',
+            foreignField: '_id',
+            as: 'project',
+          },
+        },
+        {
+          $unwind: '$project',
+        },
+        {
+          $sort: {
+            endDate: -1,
+          },
+        },
+      ])
+      .toArray();
 
     return res.json({
       payload,
       success: true,
-      message: "Success",
+      message: 'Success',
     });
   } catch (error) {
     return next(error);
@@ -61,12 +65,12 @@ export const getDetailTask = async (req, res, next) => {
     const payload = await databaseProject.task.findOne({
       _id: new ObjectId(taskId),
     });
-    const getUser=await databaseProject.user.find({_id:{$in:payload.registeredMembers}}).toArray();
+    const getUser = await databaseProject.user.find({ _id: { $in: payload.registeredMembers } }).toArray();
 
     return res.json({
-      payload: {...payload,memberDetail:getUser},
+      payload: { ...payload, memberDetail: getUser },
       success: true,
-      message: "Success",
+      message: 'Success',
     });
   } catch (error) {
     return next(error);
@@ -78,12 +82,18 @@ export const updateTask = async (req, res, next) => {
   try {
     await databaseProject.task.updateOne(
       { _id: new ObjectId(taskId) },
-      { $set: {...contentUpdate,registeredMembers:contentUpdate.registeredMembers.map((item)=> new ObjectId(item)),endDate:new Date(contentUpdate.endDate)} },
+      {
+        $set: {
+          ...contentUpdate,
+          registeredMembers: contentUpdate.registeredMembers.map((item) => new ObjectId(item)),
+          endDate: new Date(contentUpdate.endDate),
+        },
+      },
     );
     return res.json({
       payload: {},
       success: true,
-      message: "Success",
+      message: 'Success',
     });
   } catch (error) {
     return next(error);
@@ -95,13 +105,13 @@ export const deleteTask = async (req, res, next) => {
   try {
     const oldData = await databaseProject.project.findOne({ _id: new ObjectId(projectId) })[0];
     const newTasks = oldData.taskIds.filters((item) => item !== taskId);
-    await databaseProject.project.updateOne({ _id: new ObjectId(projectId) }, { $set: { 'taskIds': newTasks } });
+    await databaseProject.project.updateOne({ _id: new ObjectId(projectId) }, { $set: { taskIds: newTasks } });
     return res.json({
       payload: {},
       success: true,
-      message: "Success",
+      message: 'Success',
     });
   } catch (error) {
     return next(error);
   }
-}
+};

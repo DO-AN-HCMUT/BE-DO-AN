@@ -1,5 +1,5 @@
-import { ObjectId } from "mongodb";
-import databaseProject from "../mongodb.js";
+import { ObjectId } from 'mongodb';
+import databaseProject from '../mongodb.js';
 
 export const getMe = async (req, res, next) => {
   try {
@@ -10,7 +10,7 @@ export const getMe = async (req, res, next) => {
 
     return res.status(200).json({
       payload: result,
-      message: "Success",
+      message: 'Success',
       success: true,
     });
   } catch (error) {
@@ -25,7 +25,7 @@ export const getDetail = async (req, res, next) => {
 
     return res.status(200).json({
       payload: result,
-      message: "Success",
+      message: 'Success',
       success: true,
     });
   } catch (error) {
@@ -35,13 +35,10 @@ export const getDetail = async (req, res, next) => {
 export const updateProfile = async (req, res, next) => {
   try {
     const userId = req.userId;
-    await databaseProject.user.updateOne(
-      { _id: new ObjectId(userId) },
-      { $set: req.body },
-    );
+    await databaseProject.user.updateOne({ _id: new ObjectId(userId) }, { $set: req.body });
     return res.json({
       payload: {},
-      message: "Success",
+      message: 'Success',
       success: true,
     });
   } catch (error) {
@@ -54,9 +51,7 @@ export const getAllProject = async (req, res, next) => {
     const paging = Number(req.query?.paging);
     const search = req.query?.search;
 
-    const listOfProject = await databaseProject.project
-      .find({ memberIds: {$in: [new ObjectId(userId)]} })
-      .toArray();
+    const listOfProject = await databaseProject.project.find({ memberIds: { $in: [new ObjectId(userId)] } }).toArray();
 
     let result = listOfProject;
     if (search) {
@@ -77,7 +72,7 @@ export const getAllProject = async (req, res, next) => {
           success: true,
         });
       } else {
-        return next("error: paging query");
+        return next('error: paging query');
       }
     } else {
       return res.json({
@@ -93,19 +88,12 @@ export const getAllProject = async (req, res, next) => {
 export const getAllFriend = async (req, res, next) => {
   try {
     const userId = req.userId;
-    const projectListOwner = await databaseProject.project
-      .find({ leaderId: new ObjectId(userId) })
-      .toArray();
-    const projectListMember = await databaseProject.project
-      .find({ memberIds: userId })
-      .toArray();
+    const projectListOwner = await databaseProject.project.find({ leaderId: new ObjectId(userId) }).toArray();
+    const projectListMember = await databaseProject.project.find({ memberIds: userId }).toArray();
     Promise.all([projectListMember, projectListOwner]);
     let friendList = [];
     projectListOwner.forEach((item) => {
-      if (
-        friendList.filter((childItem) => item.memberIds.includes(childItem))
-          .length <= 0
-      ) {
+      if (friendList.filter((childItem) => item.memberIds.includes(childItem)).length <= 0) {
         friendList.push(...item.memberIds);
       }
     });
@@ -116,9 +104,7 @@ export const getAllFriend = async (req, res, next) => {
     });
     if (friendList.length > 0) {
       const friendIds = friendList.map((item) => new ObjectId(item));
-      const friendData = await databaseProject.user
-        .find({ _id: { $in: friendIds } })
-        .toArray();
+      const friendData = await databaseProject.user.find({ _id: { $in: friendIds } }).toArray();
       const payload = friendData.map((item) => {
         return {
           id: item._id,
