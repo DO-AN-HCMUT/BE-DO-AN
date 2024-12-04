@@ -57,8 +57,6 @@ export const getAllProject = async (req, res, next) => {
     const listOfProject = await databaseProject.project
       .find({ $or: [{ leaderId: new ObjectId(userId) }, { memberIds: new ObjectId(userId) }] })
       .toArray();
-    console.log("userId", userId);
-
     let result = listOfProject;
     if (searching) {
       result = listOfProject.filter((item, index) => {

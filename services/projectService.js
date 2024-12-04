@@ -252,7 +252,7 @@ export const getAllTasks = async (req, res, next) => {
     const result = await Promise.all(
       (
         await databaseProject.task
-          .find({ projectId: { $in: [projectId] } })
+          .find({ projectId: { $in: [ new ObjectId(projectId)] } })
           .toArray()
       ).map(async (item) => {
         const userIds = item.registeredMembers;

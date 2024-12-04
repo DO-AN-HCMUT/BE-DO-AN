@@ -13,7 +13,7 @@ export const getAllTask = async (req, res, next) => {
           'from': 'project',
           'localField': 'projectId',
           'foreignField': '_id',
-          'as': 'result'
+          'as': 'project'
         }
       },
       {
@@ -51,7 +51,7 @@ export const getDetailTask = async (req, res, next) => {
     const payload = await databaseProject.task.findOne({
       _id: new ObjectId(taskId),
     });
-    const getUser=await databaseProject.user.find({_id:{$in:payload.registeredMembers}}).toArray();
+    const getUser=await databaseProject.user.find({_id:{$in: payload.registeredMembers.map((item)=> new ObjectId(item))}}).toArray();
 
     return res.json({
       payload: {...payload,memberDetail:getUser},
