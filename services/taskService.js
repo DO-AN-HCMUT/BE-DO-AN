@@ -103,9 +103,12 @@ export const deleteTask = async (req, res, next) => {
   const projectId = req.query?.projectId;
   const taskId = req.params.id;
   try {
-    const oldData = await databaseProject.project.findOne({ _id: new ObjectId(projectId) })[0];
-    const newTasks = oldData.taskIds.filters((item) => item !== taskId);
+    const oldData = await databaseProject.project.findOne({ _id: new ObjectId(projectId) });
+    console.log(oldData);
+    
+    const newTasks = oldData.taskIds.filter((item) => item.toString() !== taskId);
     await databaseProject.project.updateOne({ _id: new ObjectId(projectId) }, { $set: { taskIds: newTasks } });
+    await databaseProject.task.deleteOne({_id: new ObjectId(taskId)});
     return res.json({
       payload: {},
       success: true,
