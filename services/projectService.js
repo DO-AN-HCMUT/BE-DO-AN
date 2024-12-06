@@ -80,9 +80,10 @@ export const getProject = async (req, res, next) => {
   }
 };
 
-export const addMember = async (req, res, next) => {
+export const addMembers = async (req, res, next) => {
   const projectId = req.params?.projectId;
   const { memberEmails } = req.body;
+
   try {
     const project = await databaseProject.project.findOne({
       _id: new ObjectId(projectId),
@@ -92,11 +93,15 @@ export const addMember = async (req, res, next) => {
       return next('Project not found');
     }
 
-    const newMemberIds = memberIds.filter((id) => !project.memberIds.includes(id));
+    const membersToAdd = await databaseProject.user
+      .find({
+        email: { $in: memberEmails },
+      })
+      .toArray();
 
     await databaseProject.project.updateOne(
       { _id: new ObjectId(projectId) },
-      { $set: { memberIds: [...project.memberIds, ...newMemberIds] } },
+      { $set: { memberIds: Array.from(new Set([...project.memberIds, ...membersToAdd.map((member) => member._id)])) } },
     );
     return res.json({
       payload: {},
@@ -148,12 +153,23 @@ export const deleteMember = async (req, res, next) => {
   const projectId = req.params?.projectId;
   const { memberIds } = req.body;
   try {
-    const oldMemberIds = await databaseProject.project.findOne({
+    const project = await databaseProject.project.findOne({
       _id: new ObjectId(projectId),
-    })?.memberIds;
+    });
+
+    if (!project) {
+      return next('Project not found');
+    }
+
+    if (memberIds.includes(project.leaderId.toString())) {
+      return next('Cannot delete leader');
+    }
+
+    const oldMemberIds = project?.memberIds;
+
     const index = oldMemberIds.indexOf(memberIds);
     oldMemberIds.splice(index, 1);
-    await databaseProject.project.updateOne({ _id: new ObjectId(projectId) }, { memberIds: oldMemberIds });
+    await databaseProject.project.updateOne({ _id: new ObjectId(projectId) }, { $set: { memberIds: oldMemberIds } });
     return res.json({
       payload: {},
       success: true,
