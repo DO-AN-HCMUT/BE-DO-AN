@@ -106,13 +106,13 @@ export const getAllFriend = async (req, res, next) => {
     if (friendList.length > 0) {
       const friendIds = friendList.map((item) => new ObjectId(item));
       const friendData = await databaseProject.user.find({ _id: { $in: friendIds } }).toArray();
-      const payload = friendData.map((item) => {
+      const payload = friendData.filter((item)=> item._id.toString() !== userId).map((item) => {
         return {
           id: item._id,
           fullName: item.fullName,
           avatar: item.avatar,
         };
-      });
+      });      
       return res.json({
         payload: payload,
         message: `list user's friend`,
