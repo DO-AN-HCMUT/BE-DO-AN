@@ -1,5 +1,5 @@
 import { ObjectId } from "mongodb";
-import databaseProject from "../../mongodb";
+import databaseProject from "../../mongodb.js";
 
 export const leaderValidator = async (req, res, next) => {
 	try {
