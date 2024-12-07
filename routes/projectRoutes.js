@@ -13,6 +13,7 @@ import {
   verifyMember,
   checkProjectKey,
 } from '../services/projectService.js';
+import { leaderValidator } from '../middleware/validator/leaderValidator.js';
 
 export const projectRouter = express.Router();
 projectRouter.post('/new', userValidator, makeProject);
@@ -24,5 +25,5 @@ projectRouter.post('/:projectId/sendInvitation', userValidator, sendInvitation);
 projectRouter.put('/:projectId/members', deleteMember);
 projectRouter.post('/:projectId/createTask', createTask);
 projectRouter.get('/:projectId/get', userValidator, getProject);
-projectRouter.delete('/:projectId/deleteProject', userValidator, deleteProject);
+projectRouter.delete('/:projectId/deleteProject', userValidator,leaderValidator, deleteProject);
 projectRouter.get('/:projectId/tasks', getAllTasks);
