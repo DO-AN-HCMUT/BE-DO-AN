@@ -59,13 +59,14 @@ export const getReceiver = async (req, res, next) => {
   try {
     const userId = req.userId;
 
-    const data = await databaseProject.chat.find({ userIds: { $all: [new ObjectId(userId)] } }).toArray();
+    const data = await databaseProject.chat.find({ userIds: { $in: [new ObjectId(userId)] } }).toArray();
     const result = data?.map((item) => {      
       if (item.userIds[0].toString() === (userId)) {
         return item.userIds[1].toString();
       }
       return item.userIds[0].toString();
     });    
+    
     return res.json({
       payload: { sender: userId, receiver: result },
       message: 'success',

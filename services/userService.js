@@ -98,11 +98,18 @@ export const getAllFriend = async (req, res, next) => {
         friendList.push(...item.memberIds);
       }
     });
+    console.log(friendList);
+    
     projectListMember.forEach((item) => {
-      if (!friendList.includes(item.leaderId)) {
-        friendList.push(item.leaderId);
+      console.log(item.leaderId);
+      
+      if (!friendList.includes( new ObjectId(item.leaderId))) {
+        friendList.push( new ObjectId(item.leaderId) );
       }
+      friendList.push(...item.memberIds.filter((segment)=> segment.toString() !== userId))
     });
+    console.log(friendList);
+    
     if (friendList.length > 0) {
       const friendIds = friendList.map((item) => new ObjectId(item));
       const friendData = await databaseProject.user.find({ _id: { $in: friendIds } }).toArray();
@@ -113,6 +120,7 @@ export const getAllFriend = async (req, res, next) => {
           avatar: item.avatar,
         };
       });      
+      
       return res.json({
         payload: payload,
         message: `list user's friend`,
