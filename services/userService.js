@@ -51,9 +51,31 @@ export const getAllProject = async (req, res, next) => {
     const paging = Number(req.query?.paging);
     const search = req.query?.search;
 
+    // const listOfProject = await databaseProject.project
+    //   .find({ $or: [{ leaderId: new ObjectId(userId) }, { memberIds: { $in: [new ObjectId(userId)] } }] })
+    //   .toArray();
+
     const listOfProject = await databaseProject.project
-      .find({ $or: [{ leaderId: new ObjectId(userId) }, { memberIds: { $in: [new ObjectId(userId)] } }] })
+      .aggregate([
+        {
+          $match: {
+            $or: [{ leaderId: new ObjectId(userId) }, { memberIds: { $in: [new ObjectId(userId)] } }],
+          },
+        },
+        {
+          $lookup: {
+            from: 'user',
+            localField: 'leaderId',
+            foreignField: '_id',
+            as: 'leader',
+          },
+        },
+        {
+          $unwind: '$leader',
+        },
+      ])
       .toArray();
+
     let result = listOfProject;
     if (search) {
       result = listOfProject.filter((item, index) => {
@@ -90,7 +112,9 @@ export const getAllFriend = async (req, res, next) => {
   try {
     const userId = req.userId;
     const projectListOwner = await databaseProject.project.find({ leaderId: new ObjectId(userId) }).toArray();
-    const projectListMember = await databaseProject.project.find({ memberIds: { $in: [new ObjectId(userId)] } }).toArray();
+    const projectListMember = await databaseProject.project
+      .find({ memberIds: { $in: [new ObjectId(userId)] } })
+      .toArray();
     Promise.all([projectListMember, projectListOwner]);
     let friendList = [];
     projectListOwner.forEach((item) => {
@@ -99,28 +123,30 @@ export const getAllFriend = async (req, res, next) => {
       }
     });
     console.log(friendList);
-    
+
     projectListMember.forEach((item) => {
       console.log(item.leaderId);
-      
-      if (!friendList.includes( new ObjectId(item.leaderId))) {
-        friendList.push( new ObjectId(item.leaderId) );
+
+      if (!friendList.includes(new ObjectId(item.leaderId))) {
+        friendList.push(new ObjectId(item.leaderId));
       }
-      friendList.push(...item.memberIds.filter((segment)=> segment.toString() !== userId))
+      friendList.push(...item.memberIds.filter((segment) => segment.toString() !== userId));
     });
     console.log(friendList);
-    
+
     if (friendList.length > 0) {
       const friendIds = friendList.map((item) => new ObjectId(item));
       const friendData = await databaseProject.user.find({ _id: { $in: friendIds } }).toArray();
-      const payload = friendData.filter((item)=> item._id.toString() !== userId).map((item) => {
-        return {
-          id: item._id,
-          fullName: item.fullName,
-          avatar: item.avatar,
-        };
-      });      
-      
+      const payload = friendData
+        .filter((item) => item._id.toString() !== userId)
+        .map((item) => {
+          return {
+            id: item._id,
+            fullName: item.fullName,
+            avatar: item.avatar,
+          };
+        });
+
       return res.json({
         payload: payload,
         message: `list user's friend`,
