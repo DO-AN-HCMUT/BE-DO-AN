@@ -65,7 +65,9 @@ export const getDetailTask = async (req, res, next) => {
     const payload = await databaseProject.task.findOne({
       _id: new ObjectId(taskId),
     });
-    const getUser = await databaseProject.user.find({ _id: { $in: payload.registeredMembers.map((item)=> new ObjectId(item)) } }).toArray();
+    const getUser = await databaseProject.user
+      .find({ _id: { $in: payload.registeredMembers.map((item) => new ObjectId(item)) } })
+      .toArray();
 
     return res.json({
       payload: { ...payload, memberDetail: getUser },
@@ -105,10 +107,10 @@ export const deleteTask = async (req, res, next) => {
   try {
     const oldData = await databaseProject.project.findOne({ _id: new ObjectId(projectId) });
     console.log(oldData);
-    
+
     const newTasks = oldData.taskIds.filter((item) => item.toString() !== taskId);
     await databaseProject.project.updateOne({ _id: new ObjectId(projectId) }, { $set: { taskIds: newTasks } });
-    await databaseProject.task.deleteOne({_id: new ObjectId(taskId)});
+    await databaseProject.task.deleteOne({ _id: new ObjectId(taskId) });
     return res.json({
       payload: {},
       success: true,

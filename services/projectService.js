@@ -170,6 +170,10 @@ export const deleteMember = async (req, res, next) => {
     const index = oldMemberIds.indexOf(memberIds);
     oldMemberIds.splice(index, 1);
     await databaseProject.project.updateOne({ _id: new ObjectId(projectId) }, { $set: { memberIds: oldMemberIds } });
+    await databaseProject.task.updateMany(
+      { registeredMembers: { $in: memberIds.map((id) => new ObjectId(id)) } },
+      { $pull: { registeredMembers: { $in: memberIds.map((id) => new ObjectId(id)) } } },
+    );
     return res.json({
       payload: {},
       success: true,
