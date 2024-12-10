@@ -20,10 +20,10 @@ export class Project {
     (this.leaderId = project.leaderId),
       (this.memberIds = project.memberIds ?? []),
       (this.createdAt = new Date()),
-      (this.taskIds = []),
       (this.name = project.name),
-      (this.key = project.key);
-    this.taskMaxIndex = 0;
+      (this.key = project.key),
+      (this.description = project.description ?? null),
+      (this.taskMaxIndex = 0);
   }
 }
 export class Task {
@@ -35,6 +35,16 @@ export class Task {
       (this.description = task.description ?? null),
       (this.status = task.status ?? 'TO_DO'),
       (this.endDate = task.endDate ?? null),
+      (this.createdAt = new Date());
+  }
+}
+
+export class Comment {
+  constructor(comment) {
+    (this.taskId = comment.taskId),
+      (this.createdBy = comment.createdBy),
+      (this.content = comment.content),
+      (this.hasUpdated = comment.hasUpdated ?? false),
       (this.createdAt = new Date());
   }
 }

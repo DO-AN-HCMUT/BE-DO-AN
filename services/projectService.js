@@ -4,15 +4,17 @@ import { Project, Task } from '../Schema/schema.js';
 import fs from 'fs';
 import nodemailer from 'nodemailer';
 import path from 'path';
+import dayjs from 'dayjs';
 
 export const makeProject = async (req, res, next) => {
   const leaderId = req.userId;
-  const { name, key } = req.body;
+  const { name, key, description } = req.body;
 
   const newProject = new Project({
     leaderId: new ObjectId(leaderId),
     name,
     key,
+    description,
     memberIds: [new ObjectId(leaderId)],
   });
 
@@ -51,7 +53,7 @@ export const checkProjectKey = async (req, res, next) => {
 };
 
 export const getProject = async (req, res, next) => {
-  const leaderId = req.userId;
+  const userId = req.userId;
   const projectId = req.params.projectId;
   try {
     if (projectId) {
@@ -59,18 +61,18 @@ export const getProject = async (req, res, next) => {
         _id: new ObjectId(projectId),
       });
       return res.json({
-        payload: result,
+        payload: { ...result, isMeLeader: result.leaderId.toString() === userId },
         success: true,
         message: 'Success',
       });
     } else {
       const result = await databaseProject.project
         .find({
-          $or: [{ memberIds: { $in: [new ObjectId(leaderId)] } }, { leaderId: new ObjectId(leaderId) }],
+          $or: [{ memberIds: { $in: [new ObjectId(userId)] } }, { leaderId: new ObjectId(userId) }],
         })
         .toArray();
       return res.json({
-        payload: result,
+        payload: { ...result, isMeLeader: result.leaderId.toString() === userId },
         success: true,
         message: 'Success',
       });
@@ -165,10 +167,8 @@ export const deleteMember = async (req, res, next) => {
       return next('Cannot delete leader');
     }
 
-    const oldMemberIds = project?.memberIds;
+    const oldMemberIds = project?.memberIds.filter((id) => !memberIds.includes(id.toString()));
 
-    const index = oldMemberIds.indexOf(memberIds);
-    oldMemberIds.splice(index, 1);
     await databaseProject.project.updateOne({ _id: new ObjectId(projectId) }, { $set: { memberIds: oldMemberIds } });
     await databaseProject.task.updateMany(
       { registeredMembers: { $in: memberIds.map((id) => new ObjectId(id)) } },
@@ -210,7 +210,12 @@ export const createTask = async (req, res, next) => {
   const key = project.key + '-' + (project.taskMaxIndex + 1);
 
   try {
-    const taskItem = new Task({ ...taskDetail, projectId: new ObjectId(projectId), key });
+    const taskItem = new Task({
+      ...taskDetail,
+      registeredMembers: taskDetail.registeredMembers.map((member) => new ObjectId(member)),
+      projectId: new ObjectId(projectId),
+      key,
+    });
     const result = await databaseProject.task.insertOne(taskItem);
     const insertId = result.insertedId;
     await databaseProject.project.updateOne(
@@ -248,40 +253,14 @@ export const getMembers = async (req, res, next) => {
             fullName: { $regex: search || '', $options: 'i' },
           },
         },
-        {
-          // Lookup to join the projects collection
-          $lookup: {
-            from: 'project', // Name of the collection to join with
-            localField: '_id', // The field in the members collection
-            foreignField: 'leaderId', // The field in the projects collection
-            as: 'leaderProjects', // The output array
-          },
-        },
-        {
-          // Add a field to check if the member is a leader
-          $addFields: {
-            isLeader: {
-              $cond: {
-                if: {
-                  $gt: [{ $size: '$leaderProjects' }, 0],
-                },
-                then: true,
-                else: false,
-              },
-            },
-          },
-        },
-        {
-          // Optionally exclude the `leaderProjects` array from the output
-          $project: {
-            leaderProjects: 0,
-          },
-        },
       ])
       .toArray();
 
     return res.json({
-      payload: members,
+      payload: members.map((member) => ({
+        ...member,
+        isLeader: member._id.toString() === project.leaderId.toString(),
+      })),
       success: true,
       message: 'Success',
     });
@@ -294,20 +273,27 @@ export const getAllTasks = async (req, res, next) => {
   const { projectId } = req.params;
 
   try {
-    const result = await Promise.all(
-      (await databaseProject.task.find({ projectId: { $in: [new ObjectId(projectId)] } }).toArray()).map(
-        async (item) => {
-          const userIds = item.registeredMembers;
-          const users = await databaseProject.user
-            .find({
-              _id: { $in: userIds.map((id) => new ObjectId(id)) },
-            })
-            .toArray();
+    const result = (
+      await Promise.all(
+        (await databaseProject.task.find({ projectId: { $in: [new ObjectId(projectId)] } }).toArray()).map(
+          async (item) => {
+            const userIds = item.registeredMembers;
+            const users = await databaseProject.user
+              .find({
+                _id: { $in: userIds.map((id) => new ObjectId(id)) },
+              })
+              .toArray();
 
-          return { ...item, registeredMembers: users };
-        },
-      ),
-    );
+            return { ...item, registeredMembers: users };
+          },
+        ),
+      )
+    ).map((item) => {
+      return {
+        ...item,
+        status: dayjs(item.endDate).isBefore(new Date(), 'day') && item.status !== 'DONE' ? 'OVERDUE' : item.status,
+      };
+    });
     return res.json({
       payload: result,
       success: true,

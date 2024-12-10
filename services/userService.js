@@ -17,6 +17,22 @@ export const getMe = async (req, res, next) => {
     return next(error);
   }
 };
+
+export const getUserByEmail = async (req, res, next) => {
+  try {
+    const email = req.body.email;
+
+    const result = await databaseProject.user.findOne({ email });
+    return res.status(200).json({
+      payload: result,
+      message: 'Success',
+      success: true,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 export const getDetail = async (req, res, next) => {
   try {
     const result = await databaseProject.user.findOne({

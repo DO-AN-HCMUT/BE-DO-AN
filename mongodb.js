@@ -30,6 +30,9 @@ class DatabaseService {
   get project() {
     return this.db.collection('project');
   }
+  get comment() {
+    return this.db.collection('comment');
+  }
 }
 const databaseProject = new DatabaseService();
 export default databaseProject;
