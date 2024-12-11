@@ -57,6 +57,8 @@ const socketService = (socket) => {
         socketName: socket.username,
       });
   }
+  console.log('user',users);
+  
   socket.emit('users', users);
   socket.on('message', (payload) => {
     io.to(`${payload.socketId}`).emit('private', `${payload.content}`);
