@@ -8,10 +8,10 @@ import { errorHandle } from './errorhandler/errorhandler.js';
 import databaseProject from './mongodb.js';
 import { chatRouter } from './routes/chatRoutes.js';
 import { loginRoutes } from './routes/loginRoutes.js';
+import { projectRouter } from './routes/projectRoutes.js';
 import { taskRoutes } from './routes/taskRoutes.js';
 import { userRoutes } from './routes/userRoutes.js';
-import { projectRouter } from './routes/projectRoutes.js';
-import { createServer } from 'http';
+import {createServer} from 'node:http';
 const app = express();
 const chatPort = 5500;
 config();
@@ -30,25 +30,21 @@ app.use(errorHandle);
 
 const PORT = process.env.PORT || 4000;
 
-app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}`);
-});
-const server=createServer(app);
+
+const server = createServer(app);
 const io = new Server(server, {
   cors: {
     origin: '*',
   },
 });
-const socketService = (socket) => {
-  // socket.on("message", (message) => {
-  //   io.emit("broad", message);
-  // });
+const getCurrentUser=(socket)=>{
+  
   const users = [];
   const username = socket.handshake.auth.username;
-  // if (!username) {
-  //   console.log('socket error');
-  //   return;
-  // }
+  if (!username) {
+    console.log('socket error');
+    return [];
+  }
   socket.username = username;
   for (let [id, socket] of io.of('/').sockets) {
     if (users.filter((item) => item.socketName == socket.username).length < 1 && socket.username !== undefined)
@@ -57,10 +53,14 @@ const socketService = (socket) => {
         socketName: socket.username,
       });
   }
-  console.log('user',users);
-  socket.emit('users', users);
+  return users;
+}
+const socketService = (socket) => { 
+  // socket.emit('users', getCurrentUser(socket));
   socket.on('message', (payload) => {
-    io.to(`${payload.socketId}`).emit('private', `${payload.content}`);
+    console.log(payload);
+    // io.to(`${payload.socketId}`).emit('private', `${payload.content}`);
+    io.emit('private', {userID:payload.socketID,content:payload.content});
   });
   socket.on('disconnect', (reason) => {
     socket.disconnect(true);
@@ -69,3 +69,6 @@ const socketService = (socket) => {
   });
 };
 io.on('connection', socketService);
+server.listen(PORT, () => {
+  console.log(`Example app listening on port ${PORT}`);
+});
