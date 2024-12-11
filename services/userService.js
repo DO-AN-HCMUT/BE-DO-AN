@@ -91,7 +91,7 @@ export const getAllProject = async (req, res, next) => {
         },
       ])
       .toArray();
-
+      
     let result = listOfProject;
     if (search) {
       result = listOfProject.filter((item, index) => {

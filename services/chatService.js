@@ -6,7 +6,7 @@ export const getChat = async (req, res, next) => {
   try {
     const secondId = req.params.id;
     const result = await databaseProject.chat.findOne({
-      userIds: { $all: [req.userId, secondId] },
+      userIds: { $all: [new ObjectId(req.userId), new ObjectId(secondId)] },
     });
     return res.json({
       payload: result,

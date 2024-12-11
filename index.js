@@ -11,6 +11,7 @@ import { loginRoutes } from './routes/loginRoutes.js';
 import { taskRoutes } from './routes/taskRoutes.js';
 import { userRoutes } from './routes/userRoutes.js';
 import { projectRouter } from './routes/projectRoutes.js';
+import { createServer } from 'http';
 const app = express();
 const chatPort = 5500;
 config();
@@ -32,7 +33,8 @@ const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}`);
 });
-const io = new Server(chatPort, {
+const server=createServer(app);
+const io = new Server(server, {
   cors: {
     origin: '*',
   },
