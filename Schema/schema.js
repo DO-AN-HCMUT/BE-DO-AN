@@ -48,3 +48,14 @@ export class Comment {
       (this.createdAt = new Date());
   }
 }
+
+export class Notification {
+  constructor(notification) {
+    (this.recipientId = notification.recipientId),
+      (this.type = notification.type),
+      (this.authorId = notification.authorId),
+      (this.targetId = notification.targetId),
+      (this.isRead = notification.isRead ?? false),
+      (this.createdAt = new Date());
+  }
+}
