@@ -55,8 +55,11 @@ const getCurrentUser=(socket)=>{
   }
   return users;
 }
+const users = [];
+
 const socketService = (socket) => { 
   // socket.emit('users', getCurrentUser(socket));
+  socket.emit('users',socket);
   socket.on('message', (payload) => {
     console.log(payload);
     // io.to(`${payload.socketId}`).emit('private', `${payload.content}`);
