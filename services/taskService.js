@@ -2,6 +2,8 @@ import { ObjectId } from 'mongodb';
 import databaseProject from '../mongodb.js';
 import { Comment } from '../Schema/schema.js';
 import dayjs from 'dayjs';
+import { sendNotification } from './notificationService.js';
+import { NotificationType } from '../constants/index.js';
 
 export const getAllTask = async (req, res, next) => {
   const userId = req.userId;
@@ -68,6 +70,7 @@ export const getAllTask = async (req, res, next) => {
     return next(error);
   }
 };
+
 export const getDetailTask = async (req, res, next) => {
   const taskId = req.params.id;
   try {
@@ -89,10 +92,13 @@ export const getDetailTask = async (req, res, next) => {
     return next(error);
   }
 };
+
 export const updateTask = async (req, res, next) => {
   const taskId = req.params.id;
   const contentUpdate = req.body.payload;
   try {
+    const taskBeforeUpdate = await databaseProject.task.findOne({ _id: new ObjectId(taskId) });
+
     await databaseProject.task.updateOne(
       { _id: new ObjectId(taskId) },
       {
@@ -103,6 +109,37 @@ export const updateTask = async (req, res, next) => {
         },
       },
     );
+
+    const afterMemberIds = contentUpdate.registeredMembers
+      .map((item) => new ObjectId(item))
+      .map((item) => item.toString());
+    const beforeMemberIds = taskBeforeUpdate.registeredMembers.map((item) => item.toString());
+
+    const addedMembers = afterMemberIds.filter((item) => !beforeMemberIds.includes(item));
+    const removedMembers = beforeMemberIds.filter((item) => !afterMemberIds.includes(item));
+    const unchangedMembers = afterMemberIds.filter((item) => beforeMemberIds.includes(item));
+
+    await Promise.all([
+      sendNotification(
+        addedMembers.map((id) => new ObjectId(id)),
+        NotificationType.TASK_ASSIGN,
+        new ObjectId(req.userId),
+        new ObjectId(taskId),
+      ),
+      sendNotification(
+        unchangedMembers.map((id) => new ObjectId(id)),
+        NotificationType.TASK_UPDATE,
+        new ObjectId(req.userId),
+        new ObjectId(taskId),
+      ),
+      sendNotification(
+        removedMembers.map((id) => new ObjectId(id)),
+        NotificationType.TASK_UNASSIGN,
+        new ObjectId(req.userId),
+        new ObjectId(taskId),
+      ),
+    ]);
+
     return res.json({
       payload: {},
       success: true,
@@ -112,10 +149,12 @@ export const updateTask = async (req, res, next) => {
     return next(error);
   }
 };
+
 export const deleteTask = async (req, res, next) => {
   const taskId = req.params.id;
   try {
     await databaseProject.task.deleteOne({ _id: new ObjectId(taskId) });
+
     return res.json({
       payload: {},
       success: true,
@@ -130,8 +169,6 @@ export const commentTask = async (req, res, next) => {
   const taskId = req.params.id;
   const content = req.body.content;
   const userId = req.userId;
-
-  console.log(taskId, content, userId);
 
   try {
     if (!taskId) {
@@ -149,6 +186,16 @@ export const commentTask = async (req, res, next) => {
         content,
       }),
     );
+
+    const task = await databaseProject.task.findOne({ _id: new ObjectId(taskId) });
+
+    await sendNotification(
+      task.registeredMembers,
+      NotificationType.TASK_COMMENT,
+      new ObjectId(userId),
+      new ObjectId(taskId),
+    );
+
     return res.json({
       payload: {},
       success: true,

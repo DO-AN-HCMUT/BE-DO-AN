@@ -5,6 +5,8 @@ import fs from 'fs';
 import nodemailer from 'nodemailer';
 import path from 'path';
 import dayjs from 'dayjs';
+import { sendNotification } from './notificationService.js';
+import { NotificationType } from '../constants/index.js';
 
 export const makeProject = async (req, res, next) => {
   const leaderId = req.userId;
@@ -105,6 +107,14 @@ export const addMembers = async (req, res, next) => {
       { _id: new ObjectId(projectId) },
       { $set: { memberIds: Array.from(new Set([...project.memberIds, ...membersToAdd.map((member) => member._id)])) } },
     );
+
+    await sendNotification(
+      membersToAdd.map((member) => member._id),
+      NotificationType.PROJECT_INVITE,
+      project.leaderId,
+      project._id,
+    );
+
     return res.json({
       payload: {},
       success: true,
@@ -174,6 +184,14 @@ export const deleteMember = async (req, res, next) => {
       { registeredMembers: { $in: memberIds.map((id) => new ObjectId(id)) } },
       { $pull: { registeredMembers: { $in: memberIds.map((id) => new ObjectId(id)) } } },
     );
+
+    await sendNotification(
+      memberIds.map((id) => new ObjectId(id)),
+      NotificationType.PROJECT_REMOVE_MEMBER,
+      project.leaderId,
+      project._id,
+    );
+
     return res.json({
       payload: {},
       success: true,
@@ -221,6 +239,12 @@ export const createTask = async (req, res, next) => {
     await databaseProject.project.updateOne(
       { _id: new ObjectId(projectId) },
       { $set: { taskMaxIndex: project.taskMaxIndex + 1 } },
+    );
+    await sendNotification(
+      taskDetail.registeredMembers.map((member) => new ObjectId(member)),
+      NotificationType.TASK_ASSIGN,
+      new ObjectId(req.userId),
+      insertId,
     );
     return res.json({
       payload: {},

@@ -9,9 +9,10 @@ import databaseProject from './mongodb.js';
 import { chatRouter } from './routes/chatRoutes.js';
 import { loginRoutes } from './routes/loginRoutes.js';
 import { projectRouter } from './routes/projectRoutes.js';
+import { notificationRouter } from './routes/notificationRoutes.js';
 import { taskRoutes } from './routes/taskRoutes.js';
 import { userRoutes } from './routes/userRoutes.js';
-import {createServer} from 'node:http';
+import { createServer } from 'node:http';
 const app = express();
 const chatPort = 5500;
 config();
@@ -26,10 +27,10 @@ app.use('/user', userRoutes);
 app.use('/task', taskRoutes);
 app.use('/chat', chatRouter);
 app.use('/project', projectRouter);
+app.use('/notification', notificationRouter);
 app.use(errorHandle);
 
 const PORT = process.env.PORT || 4000;
-
 
 const server = createServer(app);
 const io = new Server(server, {
@@ -37,8 +38,7 @@ const io = new Server(server, {
     origin: '*',
   },
 });
-const getCurrentUser=(socket)=>{
-  
+const getCurrentUser = (socket) => {
   const users = [];
   const username = socket.handshake.auth.username;
   if (!username) {
@@ -54,13 +54,13 @@ const getCurrentUser=(socket)=>{
       });
   }
   return users;
-}
-const socketService = (socket) => { 
+};
+const socketService = (socket) => {
   // socket.emit('users', getCurrentUser(socket));
   socket.on('message', (payload) => {
     console.log(payload);
     // io.to(`${payload.socketId}`).emit('private', `${payload.content}`);
-    io.emit('private', {userID:payload.socketID,content:payload.content});
+    io.emit('private', { userID: payload.socketID, content: payload.content });
   });
   socket.on('disconnect', (reason) => {
     socket.disconnect(true);

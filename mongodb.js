@@ -33,6 +33,9 @@ class DatabaseService {
   get comment() {
     return this.db.collection('comment');
   }
+  get notification() {
+    return this.db.collection('notification');
+  }
 }
 const databaseProject = new DatabaseService();
 export default databaseProject;
