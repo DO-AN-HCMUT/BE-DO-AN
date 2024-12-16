@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb';
 import databaseProject from '../mongodb.js';
-import { Project, Task } from '../Schema/schema.js';
+import { Invitation, Project, Task } from '../Schema/schema.js';
 import fs from 'fs';
 import nodemailer from 'nodemailer';
 import path from 'path';
@@ -126,31 +126,31 @@ export const addMembers = async (req, res, next) => {
 };
 
 export const verifyMember = async (req, res, next) => {
-  const projectId = req.params?.projectId;
-  const memberId = req.query?.memberId;
+  const invitationId = req.query?.invitationId;
   const userId = req.userId;
-  if (memberId === 'undefined') {
-    return next('Error');
-  } else if (memberId !== userId) {
-    return next('You are not invited');
-  }
   try {
+    const invitationData = await databaseProject.invitation.findOne({ _id: new ObjectId(invitationId) });
+    const { projectId, createdDate, isAccepted } = invitationData;
+    if (new Date().getTime() > new Date(createdDate).getTime() + 259200) {
+      return next('Invitation Error: Expired Date')
+    }
     const project = await databaseProject.project.findOne({
       _id: new ObjectId(projectId),
     });
 
     if (!project) {
-      return next('Project not found');
+      return next('Invitation Error: Project not found');
     }
-
-    const newMemberIds = project.memberIds.filter((id) => id === userId);
-    if (newMemberIds.length <= 0) {
-      await databaseProject.project.updateOne(
-        { _id: new ObjectId(projectId) },
-        { $set: { memberIds: [...project.memberIds, userId] } },
-      );
+    const newMemberIds = project.memberIds.filter((id) => id.toString() === userId);    
+    if (!isAccepted) {  
+      if (newMemberIds.length <= 0) {
+        await databaseProject.project.updateOne(
+          { _id: new ObjectId(projectId) },
+          { $set: { memberIds: [...project.memberIds, new ObjectId(userId)] } },
+        );
+      }
+      await databaseProject.invitation.updateOne({ _id: new ObjectId(invitationId) }, { $set: { isAccepted: true } });
     }
-
     return res.json({
       payload: {},
       success: true,
@@ -345,38 +345,52 @@ contractMail.verify((error) => {
 });
 
 export const sendInvitation = async (req, res, next) => {
-  const inviterMail = req.userMail;
-  const { guestMail, projectName } = req.body;
-  const guestDetail = await databaseProject.user.findOne({ email: guestMail });
-  let guestId;
-  if (guestDetail) {
-    guestId = guestDetail._id;
-  }
-  const projectId = req.params.projectId;
-  if (!projectName) {
-    return next('Missing parameter: projectName');
-  }
-  const template = fs
-    .readFileSync(path.resolve('mailTemplate/invitation.html'), 'utf-8')
-    .replaceAll('{{projectName}}', projectName)
-    .replace('{{inviter}}', inviterMail)
-    .replace('{{projectId}}', projectId)
-    .replace('{{memberId}}', guestId);
-  const sentMail = {
-    from: 'lightwing2208@gmail.com',
-    to: guestMail,
-    subject: 'INVITATION',
-    html: template,
-  };
-  contractMail.sendMail(sentMail, (error) => {
-    if (error) {
-      return next(error);
-    } else {
-      return res.json({
-        payload: {},
-        success: true,
-        message: 'Success',
-      });
+  try {
+    const inviterMail = req.userMail;
+    const { guestMail } = req.body;
+    const projectId = req.params.projectId;
+    const guestDetail = await databaseProject.user.findOne({ email: guestMail });
+    const projectData = await databaseProject.project.findOne({ _id: new ObjectId(projectId) });
+    const projectName = projectData.name;
+    Promise.all([
+      guestDetail, projectName
+    ]);
+    if (!projectId) {
+      return next('Missing parameter: project Id');
     }
-  });
+    const payload = {
+      receiverMail: guestMail,
+      projectName: projectName,
+      projectId: new ObjectId(projectId),
+      inviter: new ObjectId(req.userId)
+    }
+    const result = await databaseProject.invitation.insertOne(new Invitation(payload));
+    const template = fs
+      .readFileSync(path.resolve('mailTemplate/invitation.html'), 'utf-8')
+      .replaceAll('{{projectName}}', projectName)
+      .replace('{{inviter}}', inviterMail)
+      .replace('{{projectId}}', projectId)
+      .replace('{{invitationId}}', result.insertedId)
+      .replace('{{baseUrl}}', process.env.FE_URL);
+    const sentMail = {
+      from: 'lightwing2208@gmail.com',
+      to: guestMail,
+      subject: 'INVITATION',
+      html: template,
+    };
+
+    contractMail.sendMail(sentMail, (error) => {
+      if (error) {
+        return next(error);
+      } else {
+        return res.json({
+          payload: {},
+          success: true,
+          message: 'Success',
+        });
+      }
+    });
+  } catch (error) {
+    return next(error);
+  }
 };

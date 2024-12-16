@@ -24,15 +24,30 @@ export const sendNotification = async (recipientIds, type, authorId, targetId) =
     return next(error);
   }
 };
-
+export const checkTasksStatus=async(req,res,next)=>{
+  const readerId = req.userId;
+  try {
+    const result = await databaseProject.task.find({status: 'OVERDUE'}).toArray();
+    const payload = result.map((item)=> new Notification({
+      recipientId: new ObjectId(readerId),
+      type: NotificationType.TASK_UPDATE,
+      authorId: new ObjectId(item.leaderId),
+      targetId:  new ObjectId(item._id)
+    }))
+    await databaseProject.notification.insertMany(payload);
+    return res.json({ payload: {}, success: true, message: 'check tasks status: success' });
+  } catch (error) {
+    return next(error);
+  }
+};
 export const readAllNotifications = async (req, res, next) => {
   const readerId = req.userId;
-
   try {
     await databaseProject.notification.updateMany(
       { isRead: false, recipientId: new ObjectId(readerId) },
       { $set: { isRead: true } },
     );
+    return res.json({ payload: {}, success: true, message: 'Read  all notifications success' });
   } catch (error) {
     return next(error);
   }

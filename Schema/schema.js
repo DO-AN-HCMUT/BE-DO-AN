@@ -59,3 +59,13 @@ export class Notification {
       (this.createdAt = new Date());
   }
 }
+export class Invitation {
+  constructor(invitation){
+    (this.createdDate= new Date());
+    (this.receiverMail= invitation.receiverMail);
+    (this.projectName= invitation.projectName);
+    (this.projectId= invitation.projectId);
+    (this.inviter=invitation.inviter);
+    (this.isAccepted= invitation.isAccepted ?? false)
+  }
+}
