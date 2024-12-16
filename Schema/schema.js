@@ -65,7 +65,7 @@ export class Invitation {
     (this.receiverMail= invitation.receiverMail);
     (this.projectName= invitation.projectName);
     (this.projectId= invitation.projectId);
-    (this.inviter=invitation.inviter);
+    (this.leaderId=invitation.inviter);
     (this.isAccepted= invitation.isAccepted ?? false)
   }
 }
