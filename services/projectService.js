@@ -131,7 +131,7 @@ export const verifyMember = async (req, res, next) => {
     const invitationData = await databaseProject.invitation.findOne({ _id: new ObjectId(invitationId) });
     const { projectId, createdDate, isAccepted,userId} = invitationData;
     if (new Date().getTime() > new Date(createdDate).getTime() + 259200) {
-      return next('Invitation Error: Expired Date')
+      return next('Invitation Error: Expired Date');
     }
     const project = await databaseProject.project.findOne({
       _id: new ObjectId(projectId),
@@ -297,22 +297,28 @@ export const getMembers = async (req, res, next) => {
 
 export const getAllTasks = async (req, res, next) => {
   const { projectId } = req.params;
+  const registeredMemberId = req.query?.registeredMemberId;
 
   try {
     const result = (
       await Promise.all(
-        (await databaseProject.task.find({ projectId: { $in: [new ObjectId(projectId)] } }).toArray()).map(
-          async (item) => {
-            const userIds = item.registeredMembers;
-            const users = await databaseProject.user
-              .find({
-                _id: { $in: userIds.map((id) => new ObjectId(id)) },
-              })
-              .toArray();
+        (
+          await databaseProject.task
+            .find({
+              projectId: { $in: [new ObjectId(projectId)] },
+              ...(registeredMemberId ? { registeredMembers: { $in: [new ObjectId(registeredMemberId)] } } : {}),
+            })
+            .toArray()
+        ).map(async (item) => {
+          const userIds = item.registeredMembers;
+          const users = await databaseProject.user
+            .find({
+              _id: { $in: userIds.map((id) => new ObjectId(id)) },
+            })
+            .toArray();
 
-            return { ...item, registeredMembers: users };
-          },
-        ),
+          return { ...item, registeredMembers: users };
+        }),
       )
     ).map((item) => {
       return {
@@ -354,9 +360,7 @@ export const sendInvitation = async (req, res, next) => {
     const guestDetail = await databaseProject.user.findOne({ email: guestMail });
     const projectData = await databaseProject.project.findOne({ _id: new ObjectId(projectId) });
     const projectName = projectData.name;
-    Promise.all([
-      guestDetail, projectName
-    ]);
+    Promise.all([guestDetail, projectName]);
     if (!projectId) {
       return next('Missing parameter: project Id');
     }
