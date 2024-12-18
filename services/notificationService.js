@@ -24,18 +24,31 @@ export const sendNotification = async (recipientIds, type, authorId, targetId) =
     return next(error);
   }
 };
-export const checkTasksStatus=async(req,res,next)=>{
+export const checkTasksStatusOverdue = async (req, res, next) => {
   const readerId = req.userId;
   try {
-    const result = await databaseProject.task.find({status: 'OVERDUE'}).toArray();
-    const payload = result.map((item)=> new Notification({
+    const result = await databaseProject.task.aggregate([
+      {
+        '$match': {
+          'status': 'OVERDUE'
+        }
+      },
+      {
+        $sort: {
+          endDate: -1,
+        },
+      },
+    ]).toArray();
+    const payload = result.filter((material) => new Date().getTime() - new Date(material.endDate).getTime() <= 604800000).map((item) => new Notification({
       recipientId: new ObjectId(readerId),
-      type: NotificationType.TASK_UPDATE,
+      type: NotificationType.TASK_OVERDUE,
       authorId: new ObjectId(item.leaderId),
-      targetId:  new ObjectId(item._id)
+      targetId: new ObjectId(item._id)
     }))
-    await databaseProject.notification.insertMany(payload);
-    return res.json({ payload: {}, success: true, message: 'check tasks status: success' });
+    if (payload.length > 0) {
+      await databaseProject.notification.insertMany(payload);
+    }
+    return res.json({ payload: {}, success: true, message: 'check tasks status OVERDUE : success' });
   } catch (error) {
     return next(error);
   }

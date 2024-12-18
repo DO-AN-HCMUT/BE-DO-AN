@@ -127,10 +127,9 @@ export const addMembers = async (req, res, next) => {
 
 export const verifyMember = async (req, res, next) => {
   const invitationId = req.query?.invitationId;
-  const userId = req.userId;
   try {
     const invitationData = await databaseProject.invitation.findOne({ _id: new ObjectId(invitationId) });
-    const { projectId, createdDate, isAccepted } = invitationData;
+    const { projectId, createdDate, isAccepted,userId} = invitationData;
     if (new Date().getTime() > new Date(createdDate).getTime() + 259200) {
       return next('Invitation Error: Expired Date')
     }
@@ -141,7 +140,10 @@ export const verifyMember = async (req, res, next) => {
     if (!project) {
       return next('Invitation Error: Project not found');
     }
-    const newMemberIds = project.memberIds.filter((id) => id.toString() === userId);    
+    if(!userId){  
+      return next('Invitation Error: You do not have an account,please sign in')
+    }
+    const newMemberIds = project.memberIds.filter((id) => id === userId);    
     if (!isAccepted) {  
       if (newMemberIds.length <= 0) {
         await databaseProject.project.updateOne(
@@ -362,7 +364,8 @@ export const sendInvitation = async (req, res, next) => {
       receiverMail: guestMail,
       projectName: projectName,
       projectId: new ObjectId(projectId),
-      inviter: new ObjectId(req.userId)
+      inviter: new ObjectId(req.userId),
+      userId:guestDetail._id
     }
     const result = await databaseProject.invitation.insertOne(new Invitation(payload));
     const template = fs
