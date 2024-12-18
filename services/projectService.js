@@ -130,7 +130,7 @@ export const verifyMember = async (req, res, next) => {
   try {
     const invitationData = await databaseProject.invitation.findOne({ _id: new ObjectId(invitationId) });
     const { projectId, createdDate, isAccepted,userId} = invitationData;
-    if (new Date().getTime() > new Date(createdDate).getTime() + 259200) {
+    if (new Date().getTime() > new Date(createdDate).getTime() + 259200000) {
       return next('Invitation Error: Expired Date');
     }
     const project = await databaseProject.project.findOne({
