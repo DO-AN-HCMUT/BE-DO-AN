@@ -30,7 +30,8 @@ export const checkTasksStatusOverdue = async (req, res, next) => {
     const result = await databaseProject.task.aggregate([
       {
         '$match': {
-          'status': 'OVERDUE'
+          'status': 'OVERDUE',
+          'registeredMembers': new ObjectId(readerId)
         }
       },
       {
@@ -38,18 +39,18 @@ export const checkTasksStatusOverdue = async (req, res, next) => {
           endDate: -1,
         },
       },
-    ]).toArray();
+    ]).toArray();    
     
     const payload = result.filter((material) => new Date().getTime() - new Date(material.endDate).getTime() <= 604800000 && new Date().getTime() - new Date(material.endDate).getTime() > 0 ).map((item) => new Notification({
       recipientId: new ObjectId(readerId),
       type: NotificationType.TASK_OVERDUE,
       authorId: new ObjectId(item.leaderId),
       targetId: new ObjectId(item._id)
-    }))
-    
+    }))    
     const payloadId=payload.map((item)=> item.targetId);
     const checkResult= (await databaseProject.notification.find({targetId: {$in:payloadId}}).toArray()).map((item)=> item.targetId.toString());
-    const notExistId= payload.filter((item)=> !checkResult.includes(item.targetId.toString()));    
+    const notExistId= payload.filter((item)=> !checkResult.includes(item.targetId.toString()));
+
     if (notExistId.length !== 0) {
       await databaseProject.notification.insertMany(notExistId);
     }
