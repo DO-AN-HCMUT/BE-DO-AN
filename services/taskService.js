@@ -4,6 +4,7 @@ import { Comment } from '../Schema/schema.js';
 import dayjs from 'dayjs';
 import { sendNotification } from './notificationService.js';
 import { NotificationType } from '../constants/index.js';
+import cron from 'node-cron';
 
 export const getAllTask = async (req, res, next) => {
   const userId = req.userId;
@@ -97,6 +98,8 @@ export const updateTask = async (req, res, next) => {
           ...contentUpdate,
           registeredMembers: contentUpdate.registeredMembers.map((item) => new ObjectId(item)),
           endDate: new Date(contentUpdate.endDate),
+          isOverdueNotificationSent:
+            taskBeforeUpdate.endDate !== contentUpdate.endDate ? false : taskBeforeUpdate.isOverdueNotificationSent,
         },
       },
     );
@@ -277,3 +280,31 @@ export const getComments = async (req, res, next) => {
     return next(error);
   }
 };
+
+export const scheduledScanTaskOverdue = async () => {
+  const tasks = await databaseProject.task
+    .find({
+      endDate: {
+        $lt: new Date(),
+      },
+      isOverdueNotificationSent: false,
+    })
+    .toArray();
+
+  await Promise.all(
+    tasks.map(async (task) => {
+      await databaseProject.task.updateOne(
+        { _id: task._id },
+        {
+          $set: {
+            isOverdueNotificationSent: true,
+          },
+        },
+      );
+
+      await sendNotification(task.registeredMembers, NotificationType.TASK_OVERDUE, null, new ObjectId(task._id));
+    }),
+  );
+};
+
+cron.schedule('0 8 * * *', scheduledScanTaskOverdue);
