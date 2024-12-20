@@ -68,7 +68,8 @@ export const getAllNotifications = async (req, res, next) => {
           case NotificationType.TASK_UPDATE:
           case NotificationType.TASK_COMMENT:
           case NotificationType.TASK_ASSIGN:
-          case NotificationType.TASK_UNASSIGN: {
+          case NotificationType.TASK_UNASSIGN:
+          case NotificationType.TASK_OVERDUE: {
             const task = await databaseProject.task.findOne({
               _id: notification.targetId,
             });
