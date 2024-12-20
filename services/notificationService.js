@@ -43,24 +43,21 @@ export const readAllNotifications = async (req, res, next) => {
 export const getAllNotifications = async (req, res, next) => {
   const recipientId = req.userId;
   try {
-    const notifications = await databaseProject.notification
-      .aggregate([
-        {
-          $match: { recipientId: new ObjectId(recipientId) },
-        },
-        {
-          $lookup: {
-            from: 'user',
-            localField: 'authorId',
-            foreignField: '_id',
-            as: 'author',
-          },
-        },
-        { $unwind: '$author' },
-        { $unset: 'authorId' },
-        { $sort: { createdAt: -1 } },
-      ])
-      .toArray();
+    const notifications = await Promise.all(
+      (
+        await databaseProject.notification
+          .aggregate([
+            {
+              $match: { recipientId: new ObjectId(recipientId) },
+            },
+            { $sort: { createdAt: -1 } },
+          ])
+          .toArray()
+      ).map(async (notification) => ({
+        ...notification,
+        author: notification.authorId ? await databaseProject.user.findOne({ _id: notification.authorId }) : null,
+      })),
+    );
 
     const targetPopulatedNotifications = await Promise.all(
       notifications.map(async (notification) => {
