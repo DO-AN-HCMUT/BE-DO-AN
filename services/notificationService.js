@@ -40,6 +40,16 @@ export const readAllNotifications = async (req, res, next) => {
   }
 };
 
+export const readById = async (req, res, next) => {
+  const notificationId = req.params.id;
+  try {
+    await databaseProject.notification.updateOne({ _id: new ObjectId(notificationId) }, { $set: { isRead: true } });
+    return res.json({ payload: {}, success: true, message: 'Read notification by id success' });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 export const getAllNotifications = async (req, res, next) => {
   const recipientId = req.userId;
   try {
