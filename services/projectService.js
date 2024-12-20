@@ -129,7 +129,7 @@ export const verifyMember = async (req, res, next) => {
   const invitationId = req.query?.invitationId;
   try {
     const invitationData = await databaseProject.invitation.findOne({ _id: new ObjectId(invitationId) });
-    const { projectId, createdDate, isAccepted,userId} = invitationData;
+    const { projectId, createdDate, isAccepted, userId } = invitationData;
     if (new Date().getTime() > new Date(createdDate).getTime() + 259200000) {
       return next('Invitation Error: Expired Date');
     }
@@ -140,11 +140,11 @@ export const verifyMember = async (req, res, next) => {
     if (!project) {
       return next('Invitation Error: Project not found');
     }
-    if(!userId){  
-      return next('Invitation Error: You do not have an account,please sign in')
+    if (!userId) {
+      return next('Invitation Error: You do not have an account,please sign in');
     }
-    const newMemberIds = project.memberIds.filter((id) => id === userId);    
-    if (!isAccepted) {  
+    const newMemberIds = project.memberIds.filter((id) => id === userId);
+    if (!isAccepted) {
       if (newMemberIds.length <= 0) {
         await databaseProject.project.updateOne(
           { _id: new ObjectId(projectId) },
@@ -300,32 +300,25 @@ export const getAllTasks = async (req, res, next) => {
   const registeredMemberId = req.query?.registeredMemberId;
 
   try {
-    const result = (
-      await Promise.all(
-        (
-          await databaseProject.task
-            .find({
-              projectId: { $in: [new ObjectId(projectId)] },
-              ...(registeredMemberId ? { registeredMembers: { $in: [new ObjectId(registeredMemberId)] } } : {}),
-            })
-            .toArray()
-        ).map(async (item) => {
-          const userIds = item.registeredMembers;
-          const users = await databaseProject.user
-            .find({
-              _id: { $in: userIds.map((id) => new ObjectId(id)) },
-            })
-            .toArray();
+    const result = await Promise.all(
+      (
+        await databaseProject.task
+          .find({
+            projectId: { $in: [new ObjectId(projectId)] },
+            ...(registeredMemberId ? { registeredMembers: { $in: [new ObjectId(registeredMemberId)] } } : {}),
+          })
+          .toArray()
+      ).map(async (item) => {
+        const userIds = item.registeredMembers;
+        const users = await databaseProject.user
+          .find({
+            _id: { $in: userIds.map((id) => new ObjectId(id)) },
+          })
+          .toArray();
 
-          return { ...item, registeredMembers: users };
-        }),
-      )
-    ).map((item) => {
-      return {
-        ...item,
-        status: dayjs(item.endDate).isBefore(new Date(), 'day') && item.status !== 'DONE' ? 'OVERDUE' : item.status,
-      };
-    });
+        return { ...item, registeredMembers: users };
+      }),
+    );
     return res.json({
       payload: result,
       success: true,
@@ -369,8 +362,8 @@ export const sendInvitation = async (req, res, next) => {
       projectName: projectName,
       projectId: new ObjectId(projectId),
       inviter: new ObjectId(req.userId),
-      userId:guestDetail._id
-    }
+      userId: guestDetail._id,
+    };
     const result = await databaseProject.invitation.insertOne(new Invitation(payload));
     const template = fs
       .readFileSync(path.resolve('mailTemplate/invitation.html'), 'utf-8')
