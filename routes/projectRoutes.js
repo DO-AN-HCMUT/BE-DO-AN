@@ -20,7 +20,7 @@ projectRouter.post('/new', userValidator, makeProject);
 projectRouter.post('/key', checkProjectKey);
 projectRouter.get('/:projectId/members', getMembers);
 projectRouter.post('/:projectId/addMembers', addMembers);
-projectRouter.post('/verify', verifyMember);
+projectRouter.post('/verify', userValidator,verifyMember);
 projectRouter.post('/:projectId/sendInvitation', userValidator, sendInvitation);
 projectRouter.put('/:projectId/members', deleteMember);
 projectRouter.post('/:projectId/createTask', userValidator, createTask);

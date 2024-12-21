@@ -127,9 +127,10 @@ export const addMembers = async (req, res, next) => {
 
 export const verifyMember = async (req, res, next) => {
   const invitationId = req.query?.invitationId;
+  const userIdLogin=req.userId;
   try {
-    const invitationData = await databaseProject.invitation.findOne({ _id: new ObjectId(invitationId) });
-    const { projectId, createdDate, isAccepted,userId} = invitationData;
+    const invitationData = await databaseProject.invitation.findOne({ _id: new ObjectId(invitationId), isAccepted: false });
+    const { projectId, createdDate, isAccepted, userId } = invitationData;
     if (new Date().getTime() > new Date(createdDate).getTime() + 259200000) {
       return next('Invitation Error: Expired Date');
     }
@@ -140,11 +141,11 @@ export const verifyMember = async (req, res, next) => {
     if (!project) {
       return next('Invitation Error: Project not found');
     }
-    if(!userId){  
-      return next('Invitation Error: You do not have an account,please sign in')
+    if(userId.toString() !== userIdLogin){
+      return next('Invitation Error: You have a error in invitation');
     }
-    const newMemberIds = project.memberIds.filter((id) => id === userId);    
-    if (!isAccepted) {  
+    const newMemberIds = project.memberIds.filter((id) => id === userId);
+    if (!isAccepted) {
       if (newMemberIds.length <= 0) {
         await databaseProject.project.updateOne(
           { _id: new ObjectId(projectId) },
@@ -364,20 +365,51 @@ export const sendInvitation = async (req, res, next) => {
     if (!projectId) {
       return next('Missing parameter: project Id');
     }
+    if (!guestDetail._id) {
+      return next('Invitation Error: Not Existed Account')
+    }
     const payload = {
       receiverMail: guestMail,
       projectName: projectName,
       projectId: new ObjectId(projectId),
       inviter: new ObjectId(req.userId),
-      userId:guestDetail._id
+      userId: guestDetail._id
     }
-    const result = await databaseProject.invitation.insertOne(new Invitation(payload));
+    const checkExist = await databaseProject.invitation.findOne({ receiverMail: guestMail, projectName: projectName, isAccepted: false });
+    if (checkExist.length === 0) {
+      const result = await databaseProject.invitation.insertOne(new Invitation(payload));
+      const template = fs
+        .readFileSync(path.resolve('mailTemplate/invitation.html'), 'utf-8')
+        .replaceAll('{{projectName}}', projectName)
+        .replace('{{inviter}}', inviterMail)
+        .replace('{{projectId}}', projectId)
+        .replace('{{invitationId}}', result.insertedId)
+        .replace('{{baseUrl}}', process.env.FE_URL);
+      const sentMail = {
+        from: 'lightwing2208@gmail.com',
+        to: guestMail,
+        subject: 'INVITATION',
+        html: template,
+      };
+
+      contractMail.sendMail(sentMail, (error) => {
+        if (error) {
+          return next(error);
+        } else {
+          return res.json({
+            payload: {},
+            success: true,
+            message: 'Success',
+          });
+        }
+      });
+    }
     const template = fs
       .readFileSync(path.resolve('mailTemplate/invitation.html'), 'utf-8')
       .replaceAll('{{projectName}}', projectName)
       .replace('{{inviter}}', inviterMail)
       .replace('{{projectId}}', projectId)
-      .replace('{{invitationId}}', result.insertedId)
+      .replace('{{invitationId}}', checkExist._id)
       .replace('{{baseUrl}}', process.env.FE_URL);
     const sentMail = {
       from: 'lightwing2208@gmail.com',
