@@ -369,7 +369,7 @@ export const sendInvitation = async (req, res, next) => {
       inviter: new ObjectId(req.userId),
       userId: guestDetail._id
     }
-    const checkExist = await databaseProject.invitation.findOne({ receiverMail: guestMail, projectName: projectName, isAccepted: false });
+    const checkExist = await databaseProject.invitation.find({ receiverMail: guestMail, projectName: projectName, isAccepted: false }).toArray();
     if (checkExist.length === 0) {
       const result = await databaseProject.invitation.insertOne(new Invitation(payload));
       const template = fs
