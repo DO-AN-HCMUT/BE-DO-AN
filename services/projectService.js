@@ -398,31 +398,33 @@ export const sendInvitation = async (req, res, next) => {
         }
       });
     }
-    const template = fs
-      .readFileSync(path.resolve('mailTemplate/invitation.html'), 'utf-8')
-      .replaceAll('{{projectName}}', projectName)
-      .replace('{{inviter}}', inviterMail)
-      .replace('{{projectId}}', projectId)
-      .replace('{{invitationId}}', checkExist._id)
-      .replace('{{baseUrl}}', process.env.FE_URL);
-    const sentMail = {
-      from: 'lightwing2208@gmail.com',
-      to: guestMail,
-      subject: 'INVITATION',
-      html: template,
-    };
-
-    contractMail.sendMail(sentMail, (error) => {
-      if (error) {
-        return next(error);
-      } else {
-        return res.json({
-          payload: {},
-          success: true,
-          message: 'Success',
-        });
-      }
-    });
+    else{
+      const template = fs
+        .readFileSync(path.resolve('mailTemplate/invitation.html'), 'utf-8')
+        .replaceAll('{{projectName}}', projectName)
+        .replace('{{inviter}}', inviterMail)
+        .replace('{{projectId}}', projectId)
+        .replace('{{invitationId}}', checkExist._id)
+        .replace('{{baseUrl}}', process.env.FE_URL);
+      const sentMail = {
+        from: 'lightwing2208@gmail.com',
+        to: guestMail,
+        subject: 'INVITATION',
+        html: template,
+      };
+  
+      contractMail.sendMail(sentMail, (error) => {
+        if (error) {
+          return next(error);
+        } else {
+          return res.json({
+            payload: {},
+            success: true,
+            message: 'Success',
+          });
+        }
+      });
+    }
   } catch (error) {
     return next(error);
   }
