@@ -153,12 +153,13 @@ export const verifyMember = async (req, res, next) => {
         );
       }
       await databaseProject.invitation.updateOne({ _id: new ObjectId(invitationId) }, { $set: { isAccepted: true } });
+      return res.json({
+        payload: {},
+        success: true,
+        message: 'Success',
+      });
     }
-    return res.json({
-      payload: {},
-      success: true,
-      message: 'Success',
-    });
+    return next('INVITATION ERROR: You have accept this invitation before');
   } catch (error) {
     return next(error);
   }
@@ -301,32 +302,25 @@ export const getAllTasks = async (req, res, next) => {
   const registeredMemberId = req.query?.registeredMemberId;
 
   try {
-    const result = (
-      await Promise.all(
-        (
-          await databaseProject.task
-            .find({
-              projectId: { $in: [new ObjectId(projectId)] },
-              ...(registeredMemberId ? { registeredMembers: { $in: [new ObjectId(registeredMemberId)] } } : {}),
-            })
-            .toArray()
-        ).map(async (item) => {
-          const userIds = item.registeredMembers;
-          const users = await databaseProject.user
-            .find({
-              _id: { $in: userIds.map((id) => new ObjectId(id)) },
-            })
-            .toArray();
+    const result = await Promise.all(
+      (
+        await databaseProject.task
+          .find({
+            projectId: { $in: [new ObjectId(projectId)] },
+            ...(registeredMemberId ? { registeredMembers: { $in: [new ObjectId(registeredMemberId)] } } : {}),
+          })
+          .toArray()
+      ).map(async (item) => {
+        const userIds = item.registeredMembers;
+        const users = await databaseProject.user
+          .find({
+            _id: { $in: userIds.map((id) => new ObjectId(id)) },
+          })
+          .toArray();
 
-          return { ...item, registeredMembers: users };
-        }),
-      )
-    ).map((item) => {
-      return {
-        ...item,
-        status: dayjs(item.endDate).isBefore(new Date(), 'day') && item.status !== 'DONE' ? 'OVERDUE' : item.status,
-      };
-    });
+        return { ...item, registeredMembers: users };
+      }),
+    );
     return res.json({
       payload: result,
       success: true,

@@ -4,6 +4,7 @@ import { Comment } from '../Schema/schema.js';
 import dayjs from 'dayjs';
 import { sendNotification } from './notificationService.js';
 import { NotificationType } from '../constants/index.js';
+import cron from 'node-cron';
 
 export const getAllTask = async (req, res, next) => {
   const userId = req.userId;
@@ -12,54 +13,47 @@ export const getAllTask = async (req, res, next) => {
   const dueToday = req.query?.dueToday === 'true';
 
   try {
-    const payload = (
-      await databaseProject.task
-        .aggregate([
-          {
-            $match: {
-              registeredMembers: {
-                $in: [new ObjectId(userId)],
+    const payload = await databaseProject.task
+      .aggregate([
+        {
+          $match: {
+            registeredMembers: {
+              $in: [new ObjectId(userId)],
+            },
+            $or: [
+              {
+                title: { $regex: search ?? '', $options: 'i' },
               },
-              $or: [
-                {
-                  title: { $regex: search ?? '', $options: 'i' },
-                },
-                { key: { $regex: search ?? '', $options: 'i' } },
-              ],
-              ...(dueToday
-                ? {
-                    endDate: {
-                      $gte: new Date(new Date().setHours(0, 0, 0, 0)),
-                      $lt: new Date(new Date().setHours(23, 59, 59, 999)),
-                    },
-                  }
-                : {}),
-            },
+              { key: { $regex: search ?? '', $options: 'i' } },
+            ],
+            ...(dueToday
+              ? {
+                  endDate: {
+                    $gte: new Date(new Date().setHours(0, 0, 0, 0)),
+                    $lt: new Date(new Date().setHours(23, 59, 59, 999)),
+                  },
+                }
+              : {}),
           },
-          {
-            $lookup: {
-              from: 'project',
-              localField: 'projectId',
-              foreignField: '_id',
-              as: 'project',
-            },
+        },
+        {
+          $lookup: {
+            from: 'project',
+            localField: 'projectId',
+            foreignField: '_id',
+            as: 'project',
           },
-          {
-            $unwind: '$project',
+        },
+        {
+          $unwind: '$project',
+        },
+        {
+          $sort: {
+            endDate: -1,
           },
-          {
-            $sort: {
-              endDate: -1,
-            },
-          },
-        ])
-        .toArray()
-    ).map((item) => {
-      return {
-        ...item,
-        status: dayjs(item.endDate).isBefore(new Date(), 'day') && item.status !== 'DONE' ? 'OVERDUE' : item.status,
-      };
-    });
+        },
+      ])
+      .toArray();
 
     return res.json({
       payload,
@@ -77,8 +71,6 @@ export const getDetailTask = async (req, res, next) => {
     const payload = await databaseProject.task.findOne({
       _id: new ObjectId(taskId),
     });
-    payload.status =
-      dayjs(payload.endDate).isBefore(new Date(), 'day') && payload.status !== 'DONE' ? 'OVERDUE' : payload.status;
     const getUser = await databaseProject.user
       .find({ _id: { $in: payload.registeredMembers.map((item) => new ObjectId(item)) } })
       .toArray();
@@ -106,6 +98,8 @@ export const updateTask = async (req, res, next) => {
           ...contentUpdate,
           registeredMembers: contentUpdate.registeredMembers.map((item) => new ObjectId(item)),
           endDate: new Date(contentUpdate.endDate),
+          isOverdueNotificationSent:
+            taskBeforeUpdate.endDate !== contentUpdate.endDate ? false : taskBeforeUpdate.isOverdueNotificationSent,
         },
       },
     );
@@ -286,3 +280,31 @@ export const getComments = async (req, res, next) => {
     return next(error);
   }
 };
+
+export const scheduledScanTaskOverdue = async () => {
+  const tasks = await databaseProject.task
+    .find({
+      endDate: {
+        $lt: new Date(),
+      },
+      isOverdueNotificationSent: false,
+    })
+    .toArray();
+
+  await Promise.all(
+    tasks.map(async (task) => {
+      await databaseProject.task.updateOne(
+        { _id: task._id },
+        {
+          $set: {
+            isOverdueNotificationSent: true,
+          },
+        },
+      );
+
+      await sendNotification(task.registeredMembers, NotificationType.TASK_OVERDUE, null, new ObjectId(task._id));
+    }),
+  );
+};
+
+cron.schedule('0 8 * * *', scheduledScanTaskOverdue);

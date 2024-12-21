@@ -6,7 +6,6 @@ export const getMe = async (req, res, next) => {
     const result = await databaseProject.user.findOne({
       _id: new ObjectId(req.userId),
     });
-    console.log(req.userId);
 
     return res.status(200).json({
       payload: result,
@@ -91,7 +90,7 @@ export const getAllProject = async (req, res, next) => {
         },
       ])
       .toArray();
-      
+
     let result = listOfProject;
     if (search) {
       result = listOfProject.filter((item, index) => {
