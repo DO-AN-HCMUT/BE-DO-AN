@@ -5,6 +5,9 @@ import dayjs from 'dayjs';
 import { sendNotification } from './notificationService.js';
 import { NotificationType } from '../constants/index.js';
 import cron from 'node-cron';
+import nodemailer from 'nodemailer';
+import fs from 'fs';
+import path from 'path';
 
 export const getAllTask = async (req, res, next) => {
   const userId = req.userId;
@@ -283,12 +286,22 @@ export const getComments = async (req, res, next) => {
 
 export const scheduledScanTaskOverdue = async () => {
   const tasks = await databaseProject.task
-    .find({
-      endDate: {
-        $lt: new Date(),
+    .aggregate([
+      {
+        $match: {
+          endDate: {
+            $lt: new Date(),
+          },
+          isOverdueNotificationSent: false,
+        },
       },
-      isOverdueNotificationSent: false,
-    })
+      {
+        $sort: {
+          projectId: 1,
+          createdAt: -1,
+        },
+      },
+    ])
     .toArray();
 
   await Promise.all(
@@ -305,6 +318,52 @@ export const scheduledScanTaskOverdue = async () => {
       await sendNotification(task.registeredMembers, NotificationType.TASK_OVERDUE, null, new ObjectId(task._id));
     }),
   );
+
+  const overdueTasksByRegisteredMembers = tasks.reduce((acc, task) => {
+    task.registeredMembers.forEach((member) => {
+      if (!acc[member]) {
+        acc[member] = [];
+      }
+      acc[member].push(task);
+    });
+    return acc;
+  }, {});
+
+  const contractMail = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: 'lightwing2208@gmail.com',
+      pass: process.env.PASS_MAIL,
+    },
+  });
+
+  Object.keys(overdueTasksByRegisteredMembers).forEach(async (member) => {
+    const memberInfo = await databaseProject.user.findOne({ _id: new ObjectId(member) });
+    const tasks = overdueTasksByRegisteredMembers[member];
+
+    const renderedTasks = tasks.map(
+      (task) =>
+        `<a style="text-decoration: none; color: #555555" href="${`${process.env.FE_URL}/projects/tasks?projectId=${task.projectId}`}"><p style="font-weight: 500;"><span style="color: #135D66;">[${task.key}]</span> ${task.title}</p></a>`,
+    );
+
+    const template = fs
+      .readFileSync(path.resolve('mailTemplate/dueTasks.html'), 'utf-8')
+      .replace('{{overdueTasks}}', renderedTasks.join(''));
+
+    contractMail.sendMail(
+      {
+        from: 'lightwing2208@gmail.com',
+        to: memberInfo.email,
+        subject: '[Tasks Management System] Overdue Tasks',
+        html: template,
+      },
+      (error) => {
+        if (error) {
+          console.log(error);
+        }
+      },
+    );
+  });
 };
 
 cron.schedule('0 8 * * *', scheduledScanTaskOverdue);

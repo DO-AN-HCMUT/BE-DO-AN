@@ -127,9 +127,12 @@ export const addMembers = async (req, res, next) => {
 
 export const verifyMember = async (req, res, next) => {
   const invitationId = req.query?.invitationId;
-  const userIdLogin=req.userId;
+  const userIdLogin = req.userId;
   try {
-    const invitationData = await databaseProject.invitation.findOne({ _id: new ObjectId(invitationId), isAccepted: false });
+    const invitationData = await databaseProject.invitation.findOne({
+      _id: new ObjectId(invitationId),
+      isAccepted: false,
+    });
     const { projectId, createdDate, isAccepted, userId } = invitationData;
     if (new Date().getTime() > new Date(createdDate).getTime() + 259200000) {
       return next('Invitation Error: Expired Date');
@@ -141,7 +144,7 @@ export const verifyMember = async (req, res, next) => {
     if (!project) {
       return next('Invitation Error: Project not found');
     }
-    if(userId.toString() !== userIdLogin){
+    if (userId.toString() !== userIdLogin) {
       return next('Invitation Error: You have a error in invitation');
     }
     const newMemberIds = project.memberIds.filter((id) => id === userId);
@@ -355,21 +358,22 @@ export const sendInvitation = async (req, res, next) => {
     const guestDetail = await databaseProject.user.findOne({ email: guestMail });
     const projectData = await databaseProject.project.findOne({ _id: new ObjectId(projectId) });
     const projectName = projectData.name;
-    Promise.all([guestDetail, projectName]);
     if (!projectId) {
       return next('Missing parameter: project Id');
     }
     if (!guestDetail._id) {
-      return next('Invitation Error: Not Existed Account')
+      return next('Invitation Error: Not Existed Account');
     }
     const payload = {
       receiverMail: guestMail,
       projectName: projectName,
       projectId: new ObjectId(projectId),
       inviter: new ObjectId(req.userId),
-      userId: guestDetail._id
-    }
-    const checkExist = await databaseProject.invitation.find({ receiverMail: guestMail, projectName: projectName, isAccepted: false }).toArray();
+      userId: guestDetail._id,
+    };
+    const checkExist = await databaseProject.invitation
+      .find({ receiverMail: guestMail, projectName: projectName, isAccepted: false })
+      .toArray();
     if (checkExist.length === 0) {
       const result = await databaseProject.invitation.insertOne(new Invitation(payload));
       const template = fs
@@ -382,7 +386,7 @@ export const sendInvitation = async (req, res, next) => {
       const sentMail = {
         from: 'lightwing2208@gmail.com',
         to: guestMail,
-        subject: 'INVITATION',
+        subject: '[Task Management System] You have a project invitation',
         html: template,
       };
 
@@ -397,8 +401,7 @@ export const sendInvitation = async (req, res, next) => {
           });
         }
       });
-    }
-    else{
+    } else {
       const template = fs
         .readFileSync(path.resolve('mailTemplate/invitation.html'), 'utf-8')
         .replaceAll('{{projectName}}', projectName)
@@ -409,10 +412,10 @@ export const sendInvitation = async (req, res, next) => {
       const sentMail = {
         from: 'lightwing2208@gmail.com',
         to: guestMail,
-        subject: 'INVITATION',
+        subject: '[Task Management System] You have a project invitation',
         html: template,
       };
-  
+
       contractMail.sendMail(sentMail, (error) => {
         if (error) {
           return next(error);
