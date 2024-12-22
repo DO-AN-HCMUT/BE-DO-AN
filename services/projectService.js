@@ -228,6 +228,10 @@ export const createTask = async (req, res, next) => {
   const projectId = req.params?.projectId;
   const taskDetail = req.body;
 
+  if (!taskDetail.title) {
+    return next('Title is required');
+  }
+
   const project = await databaseProject.project.findOne({
     _id: new ObjectId(projectId),
   });
@@ -237,7 +241,7 @@ export const createTask = async (req, res, next) => {
   try {
     const taskItem = new Task({
       ...taskDetail,
-      registeredMembers: taskDetail.registeredMembers.map((member) => new ObjectId(member)),
+      registeredMembers: taskDetail.registeredMembers?.map((member) => new ObjectId(member)) ?? [],
       projectId: new ObjectId(projectId),
       key,
     });
@@ -247,12 +251,14 @@ export const createTask = async (req, res, next) => {
       { _id: new ObjectId(projectId) },
       { $set: { taskMaxIndex: project.taskMaxIndex + 1 } },
     );
-    await sendNotification(
-      taskDetail.registeredMembers.map((member) => new ObjectId(member)),
-      NotificationType.TASK_ASSIGN,
-      new ObjectId(req.userId),
-      insertId,
-    );
+    if (taskDetail.registeredMembers) {
+      await sendNotification(
+        taskDetail.registeredMembers.map((member) => new ObjectId(member)),
+        NotificationType.TASK_ASSIGN,
+        new ObjectId(req.userId),
+        insertId,
+      );
+    }
     return res.json({
       payload: {},
       success: true,

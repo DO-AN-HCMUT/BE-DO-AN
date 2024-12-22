@@ -34,7 +34,7 @@ export class Task {
       (this.registeredMembers = task.registeredMembers ?? []),
       (this.description = task.description ?? null),
       (this.status = task.status ?? 'TO_DO'),
-      (this.endDate = new Date(task.endDate) ?? null),
+      (this.endDate = task.endDate ? new Date(task.endDate) : null),
       (this.createdAt = new Date());
     this.isOverdueNotificationSent = task.isOverdueNotificationSent ?? false;
   }

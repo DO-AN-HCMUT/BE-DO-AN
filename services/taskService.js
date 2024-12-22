@@ -100,7 +100,7 @@ export const updateTask = async (req, res, next) => {
         $set: {
           ...contentUpdate,
           registeredMembers: contentUpdate.registeredMembers.map((item) => new ObjectId(item)),
-          endDate: new Date(contentUpdate.endDate),
+          endDate: contentUpdate.endDate ? new Date(contentUpdate.endDate) : null,
           isOverdueNotificationSent:
             taskBeforeUpdate.endDate !== contentUpdate.endDate ? false : taskBeforeUpdate.isOverdueNotificationSent,
         },
