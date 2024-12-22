@@ -88,6 +88,11 @@ export const getAllProject = async (req, res, next) => {
         {
           $unwind: '$leader',
         },
+        {
+          $sort: {
+            createdAt: 1,
+          },
+        },
       ])
       .toArray();
 

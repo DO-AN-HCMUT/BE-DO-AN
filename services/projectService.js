@@ -367,7 +367,7 @@ export const sendInvitation = async (req, res, next) => {
     if (!projectId) {
       return next('Missing parameter: project Id');
     }
-    if (!guestDetail._id) {
+    if (!guestDetail?._id) {
       return next('Invitation Error: Not Existed Account');
     }
     const payload = {
